@@ -1,113 +1,5 @@
 from __future__ import print_function
-from __future__ import division
-from enum import Enum
-
-
-class Instruction(Enum):
-    ADD = 1
-    MUL = 2
-    INP = 3
-    OUT = 4
-    JIT = 5
-    JIF = 6
-    LT  = 7
-    EQU = 8
-    HCF = 99
-
-    @classmethod
-    def instruction_size(cls, instr):
-        if   instr == cls.ADD: return 4
-        elif instr == cls.MUL: return 4
-        elif instr == cls.INP: return 2
-        elif instr == cls.OUT: return 2
-        elif instr == cls.JIT: return 3
-        elif instr == cls.JIF: return 3
-        elif instr == cls.LT:  return 4
-        elif instr == cls.EQU: return 4
-        elif instr == cls.HCF: return 1
-        else: raise Exception("illegal instruction: {}".format(instr))
-
-
-class IntcodeCPU(object):
-    def __init__(self, memory):
-        self._memory = memory
-        self._pc = 0  # program counter
-
-    def _get_parameter_mode(self, param):
-        return self._get_opcode() // 10**(param+1) % 10
-
-    def _get_param(self, param):
-        parameter_mode = self._get_parameter_mode(param)
-        if parameter_mode == 0:
-            return self._memory[self._memory[self._pc+param]]
-        elif parameter_mode == 1:
-            return self._memory[self._pc+param]
-        else:
-            raise Exception("unknown parameter mode: {}".format(parameter_mode))
-
-    def _set_param(self, param, val):
-        parameter_mode = self._get_parameter_mode(param)
-        if parameter_mode == 0:
-            self._memory[self._memory[self._pc+param]] = val
-        elif parameter_mode == 1:
-            raise Exception("illegal parameter mode: {}".format(parameter_mode))
-        else:
-            raise Exception("unknown parameter mode: {}".format(parameter_mode))
-
-    def _get_opcode(self):
-        return self._memory[self._pc]
-
-    def _get_instruction(self):
-        return Instruction(self._get_opcode() % 100)
-
-    def _advance_program_counter(self, instr):
-        self._pc += Instruction.instruction_size(instr)
-
-    def run_program(self, in_data):
-        out_data = []
-        while True:
-            instr = self._get_instruction()
-            if instr == Instruction.ADD:
-                self._set_param(3, self._get_param(1) + self._get_param(2))
-                self._advance_program_counter(instr)
-            elif instr == Instruction.MUL:
-                self._set_param(3, self._get_param(1) * self._get_param(2))
-                self._advance_program_counter(instr)
-            elif instr == Instruction.INP:
-                self._set_param(1, in_data.pop())
-                self._advance_program_counter(instr)
-            elif instr == Instruction.OUT:
-                out_data.append(self._get_param(1))
-                self._advance_program_counter(instr)
-            elif instr == Instruction.JIT:
-                if self._get_param(1):
-                    self._pc = self._get_param(2)
-                else:
-                    self._advance_program_counter(instr)
-            elif instr == Instruction.JIF:
-                if not self._get_param(1):
-                    self._pc = self._get_param(2)
-                else:
-                    self._advance_program_counter(instr)
-            elif instr == Instruction.LT:
-                if self._get_param(1) < self._get_param(2):
-                    self._set_param(3, 1)
-                else:
-                    self._set_param(3, 0)
-                self._advance_program_counter(instr)
-            elif instr == Instruction.EQU:
-                if self._get_param(1) == self._get_param(2):
-                    self._set_param(3, 1)
-                else:
-                    self._set_param(3, 0)
-                self._advance_program_counter(instr)
-            elif instr == Instruction.HCF:
-                break
-            else:
-                raise Exception("illegal instruction: {}".format(instruction))
-
-        return out_data
-
+from intcode_cpu import IntcodeCPU
 
 memory = [
     3, 225, 1, 225, 6, 6, 1100, 1, 238, 225, 104, 0, 2, 218, 57, 224, 101,
@@ -156,9 +48,12 @@ memory = [
     1005, 224, 674, 1001, 223, 1, 223, 4, 223, 99, 226
 ]
 
-cpu = IntcodeCPU(memory[:])
-print(cpu.run_program([1]))
+cpu = IntcodeCPU()
+output = cpu.run_program(memory, [1])
+print(output)
+assert output == [0, 0, 0, 0, 0, 0, 0, 0, 0, 6069343]
 
-cpu = IntcodeCPU(memory[:])
-print(cpu.run_program([5]))
+output = cpu.run_program(memory, [5])
+print(output)
+assert output == [3188550]
 
