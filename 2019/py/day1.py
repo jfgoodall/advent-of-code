@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 modules = [
     120588, 137636, 114877, 118328, 97394, 58497, 139343, 80307, 125063, 70956,
     119676, 76115, 91916, 64618, 82881, 57000, 141785, 73460, 68992, 125701,
@@ -17,7 +15,8 @@ def fuel(mass):
     return int(mass/3.)-2
 
 total_fuel = sum(map(fuel, modules))
-print(total_fuel)
+print("part 1: {}".format(total_fuel))
+assert total_fuel == 3363033
 
 def fuel_for_fuel(fuel_in):
     extra_fuel = int(fuel_in/3.)-2
@@ -27,4 +26,5 @@ def fuel_for_fuel(fuel_in):
         return fuel_in + fuel_for_fuel(extra_fuel)
 
 total_fuel = sum(map(fuel_for_fuel, map(fuel, modules)))
-print(total_fuel)
+print("part 2: {}".format(total_fuel))
+assert total_fuel == 5041680

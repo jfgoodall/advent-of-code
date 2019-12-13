@@ -1,37 +1,48 @@
-from __future__ import division
 from enum import Enum
 
 
-class IntcodeCPU(object):
-    class ParameterMode(Enum):
-        POSITION = 0
+class IntcodeCPU:
+    class _ParameterMode(Enum):
+        POSITION  = 0
         IMMEDIATE = 1
-        RELATIVE = 2
+        RELATIVE  = 2
+
+    class _Instruction(Enum):
+        ADD = 1
+        MUL = 2
+        INP = 3
+        OUT = 4
+        JIT = 5
+        JIF = 6
+        LT  = 7
+        EQU = 8
+        ARB = 9
+        HCF = 99
 
     def __init__(self):
         self._instruction_map = {
-            1: self._execute_instr_ADD,
-            2: self._execute_instr_MUL,
-            3: self._execute_instr_INP,
-            4: self._execute_instr_OUT,
-            5: self._execute_instr_JIT,
-            6: self._execute_instr_JIF,
-            7: self._execute_instr_LT,
-            8: self._execute_instr_EQU,
-            9: self._execute_instr_ARB,
-            99: self._execute_instr_HCF,
+            self._Instruction.ADD: self._execute_instr_ADD,
+            self._Instruction.MUL: self._execute_instr_MUL,
+            self._Instruction.INP: self._execute_instr_INP,
+            self._Instruction.OUT: self._execute_instr_OUT,
+            self._Instruction.JIT: self._execute_instr_JIT,
+            self._Instruction.JIF: self._execute_instr_JIF,
+            self._Instruction.LT:  self._execute_instr_LT,
+            self._Instruction.EQU: self._execute_instr_EQU,
+            self._Instruction.ARB: self._execute_instr_ARB,
+            self._Instruction.HCF: self._execute_instr_HCF,
         }
 
     def _get_parameter_mode(self, param):
-        return self.ParameterMode(self._get_opcode() // 10**(param+1) % 10)
+        return self._ParameterMode(self._get_opcode() // 10**(param+1) % 10)
 
     def _get_param_val_ptr(self, param):
         parameter_mode = self._get_parameter_mode(param)
-        if parameter_mode == self.ParameterMode.POSITION:
+        if parameter_mode == self._ParameterMode.POSITION:
             addr = self._memory[self._pc+param]
-        elif parameter_mode == self.ParameterMode.IMMEDIATE:
+        elif parameter_mode == self._ParameterMode.IMMEDIATE:
             addr = self._pc + param
-        elif parameter_mode == self.ParameterMode.RELATIVE:
+        elif parameter_mode == self._ParameterMode.RELATIVE:
             addr = + self._memory[self._pc+param] + self._relative_base_offset
         else:
             raise Exception("unknown parameter mode: {}".format(parameter_mode))
@@ -54,7 +65,7 @@ class IntcodeCPU(object):
         return self._memory[self._pc]
 
     def _get_instruction(self):
-        return self._get_opcode() % 100
+        return self._Instruction(self._get_opcode() % 100)
 
     def _advance_program_counter(self, n):
         self._pc += n

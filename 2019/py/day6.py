@@ -1,8 +1,6 @@
-from __future__ import print_function
-from __future__ import division
 from collections import defaultdict
 
-class Node(object):
+class Node:
     def __init__(self):
         self.name = ''
         self.parent = None
@@ -196,7 +194,10 @@ orbits = [
 # ]
 
 orbit_map = construct_map(orbits)
-print(count_orbits(orbit_map))
+num_orbits = count_orbits(orbit_map)
+print("part 1: {}".format(num_orbits))
+assert num_orbits == 106065
+
 
 # orbits = [
 #     "COM)B", "B)C", "C)D", "D)E", "E)F", "B)G", "G)H", "D)I", "E)J", "J)K",
@@ -207,5 +208,7 @@ n1 = orbit_map['YOU'].parent
 n2 = orbit_map['SAN'].parent
 common_parents = set(n1.get_parents()) & set(n2.get_parents())
 hops = [n1.count_parent_links(o) + n2.count_parent_links(o) for o in common_parents]
-print(min(hops))
+min_hops = min(hops)
+print("part 2: {}".format(min_hops))
+assert min_hops == 253
 

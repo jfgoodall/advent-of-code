@@ -1,12 +1,10 @@
-from __future__ import print_function
-
 IMAGE_SIZE = 25*6
 
 def load_image():
     with open('day8.dat') as f:
         image = f.readlines()
         assert len(image) == 1
-        image = map(int, image[0].strip())
+        image = list(map(int, image[0].strip()))
         assert len(image) % IMAGE_SIZE == 0
     return image
 
@@ -18,7 +16,9 @@ image = load_image()
 layers = list(decode_layers(image))
 zeroes = [layer.count(0) for layer in layers]
 idx = zeroes.index(min(zeroes))
-print(layers[idx].count(1) * layers[idx].count(2))
+product = layers[idx].count(1) * layers[idx].count(2)
+print("part 1: {}".format(product))
+assert product == 2064
 
 msg = []
 for x in range(IMAGE_SIZE):
@@ -27,6 +27,7 @@ for x in range(IMAGE_SIZE):
             msg.append(layer[x])
             break
 
-msg = u''.join(map(lambda x: u'\u2591' if x==0 else u'\u2588', msg))
+msg = ''.join(map(lambda x: '\u2591' if x==0 else '\u2588', msg))
+print("part 2:")
 for x in range(6):
     print(msg[x*25:(x+1)*25])

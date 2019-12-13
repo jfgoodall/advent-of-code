@@ -1,7 +1,5 @@
-from __future__ import print_function
 import itertools
 import numpy as np
-import matplotlib.pyplot as plt
 
 def dump_state(step, pos, vel):
     for body in range(np.shape(pos)[0]):
@@ -76,7 +74,9 @@ pos = np.array((
 vel = np.zeros((4, 3), dtype=np.int)
 for _ in range(1000):
     step_time(pos, vel)
-print('part 1: {}'.format(calc_energy(pos, vel)))
+energy = calc_energy(pos, vel)
+print('part 1: {}'.format(energy))
+assert energy == 6423
 
 # --- part 2 ---
 def idx_of_value(seq, val):
@@ -104,9 +104,9 @@ def find_common_period(pos, iterations=1000, start_pos=0):
     for _ in range(iterations):
         for axis1 in range(np.shape(pos)[0]):
             for axis2 in range(np.shape(pos)[1]):
-                idx = axis1*np.shape(pos)[1]+axis2
+                idx = axis1 * np.shape(pos)[1] + axis2
                 signals[idx].append(pos[axis1][axis2])
-                idx += len(signals)/2
+                idx += len(signals) // 2
                 signals[idx].append(vel[axis1][axis2])
         step_time(pos, vel)
     print('calculating periods...')
@@ -117,7 +117,8 @@ def find_common_period(pos, iterations=1000, start_pos=0):
 
     def lcm(seq):
         from fractions import gcd
-        return reduce(lambda a, b: a * b / gcd(a, b), seq)
+        from functools import reduce
+        return reduce(lambda a, b: a * b // gcd(a, b), seq)
 
     return lcm(periods)
 
@@ -146,3 +147,5 @@ pos = np.array((
 # skip the first 10000 samples to let the intial conditions settle
 period = find_common_period(pos, iterations=500000, start_pos=10000)
 print('part 2: {}'.format(period))
+assert period == 327636285682704
+

@@ -1,4 +1,3 @@
-from __future__ import print_function
 from intcode_cpu import IntcodeCPU
 
 cpu = IntcodeCPU()
@@ -15,8 +14,13 @@ assert cpu.run_program(example_mem) == [example_mem[1]]
 with open('day9.dat') as f:
     memory = f.readlines()
     assert len(memory) == 1
-    memory = map(int, memory[0].strip().split(','))
+    memory = list(map(int, memory[0].strip().split(',')))
 
-print(cpu.run_program(memory, [1]))
-print(cpu.run_program(memory, [2]))
+output = cpu.run_program(memory, [1])
+print("part 1: {}".format(output[0]))
+assert output == [2436480432]
+
+output = cpu.run_program(memory, [2])
+print("part 2: {}".format(output[0]))
+assert output == [45710]
 

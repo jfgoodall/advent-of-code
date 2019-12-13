@@ -1,4 +1,3 @@
-from __future__ import print_function
 from intcode_cpu import IntcodeCPU
 from enum import Enum
 import itertools
@@ -13,14 +12,14 @@ class Tile(Enum):
 with open('day13.dat') as f:
     memory = f.readlines()
     assert len(memory) == 1
-    memory = map(int, memory[0].strip().split(','))
+    memory = list(map(int, memory[0].strip().split(',')))
 
 
 cpu = IntcodeCPU()
 output = cpu.run_program(memory)
 block_tiles = [t for t in output[2::3] if Tile(t) == Tile.Block]
-assert len(block_tiles) == 348
 print("part 1: {}".format(len(block_tiles)))
+assert len(block_tiles) == 348
 
 
 memory[0] = 2
@@ -30,7 +29,7 @@ score = 0
 while not cpu.halted():
     output = cpu.continue_program(in_data)
     iterators = [iter(output)] * 3
-    for x, y, tile in itertools.izip_longest(*iterators):
+    for x, y, tile in itertools.zip_longest(*iterators):
         if (x, y) == (-1, 0):
             score = tile
         elif Tile(tile) == Tile.Ball:
@@ -44,6 +43,6 @@ while not cpu.halted():
     else:
         in_data = [0]
 
-assert score == 16999
 print("part 2: {}".format(score))
+assert score == 16999
 

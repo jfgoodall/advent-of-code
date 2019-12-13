@@ -1,4 +1,3 @@
-from __future__ import print_function
 import numpy as np
 
 wire1 = [
@@ -110,7 +109,11 @@ path1, plength1 = mark_route(wire1)
 path2, plength2 = mark_route(wire2)
 intersections = path1 & path2
 
-print(min_dist(intersections))
-print(min_steps(intersections, plength1, plength2))
+dist = min_dist(intersections)
+print("part 1: {}".format(dist))
+assert dist == 1337
 
+steps = min_steps(intersections, plength1, plength2)
+print("part 2: {}".format(steps))
+assert steps == 65356
 

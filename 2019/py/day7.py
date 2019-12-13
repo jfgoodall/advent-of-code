@@ -1,4 +1,3 @@
-from __future__ import print_function
 from intcode_cpu import IntcodeCPU
 import itertools
 
@@ -6,7 +5,7 @@ def find_max_thruster_signal(memory, feedback=False):
     NUM_AMPLIFIERS = 5
 
     cpus = [IntcodeCPU() for _ in range(NUM_AMPLIFIERS)]
-    max_signal = None
+    max_signal = 0
     phase_offset = 5 if feedback else 0
     phase_range = range(0+phase_offset, NUM_AMPLIFIERS+phase_offset)
     for phases in itertools.permutations(phase_range):
@@ -64,7 +63,7 @@ memory = [
     4,9,99
 ]
 signal = find_max_thruster_signal(memory)
-print(signal)
+print("part 1: {}".format(signal))
 assert signal == 422858
 
 example_mem = [3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,
@@ -77,6 +76,6 @@ example_mem = [3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,
 assert find_max_thruster_signal(example_mem, feedback=True) == 18216
 
 signal = find_max_thruster_signal(memory, feedback=True)
-print(signal)
+print("part 2: {}".format(signal))
 assert signal == 14897241
 

@@ -1,4 +1,3 @@
-from __future__ import print_function
 from fractions import gcd
 from collections import defaultdict
 import math
@@ -53,7 +52,7 @@ def trace_rays(asteroid_map):
 
 # better algorithm for part1 (returns coords of site)
 def find_best_site(rays):
-    best_site = max(rays.iteritems(), key=lambda x: len(x[1]))
+    best_site = max(rays.items(), key=lambda x: len(x[1]))
     return (len(best_site[1]), best_site[0])
 
 def zap_asteroids(rays, site):
@@ -62,7 +61,7 @@ def zap_asteroids(rays, site):
     # sort asteroids in each ray by their distance to site
     def dist(coord):
         return (coord[0]-site[0])**2 + (coord[1]-site[1])**2
-    for theta, coords in rays.iteritems():
+    for theta, coords in rays.items():
         rays[theta] = sorted(coords, key=dist)
 
     while rays:
@@ -209,10 +208,14 @@ asteroid_map = [
 ]
 rays = trace_rays(asteroid_map)
 best = find_best_site(rays)
-print('{} @ {}'.format(best[0], best[1]))
+print("part 1: {} (@ {})".format(best[0], best[1]))
+assert best == (276, (17, 22))
 assert find_max_los(asteroid_map) == best[0]
+
 zapped = zap_asteroids(rays[best[1]], best[1])
-print('#200 @ {} --> {}'.format(zapped[199], zapped[199][0]*100+zapped[199][1]))
+combined_coord = zapped[199][0]*100+zapped[199][1]
+print("part 2: {} (@ {})".format(combined_coord, zapped[199]))
+assert (combined_coord, zapped[199]) == (1321, (13, 21))
 
 asteroid_map = [
     '.#....#####...#..',

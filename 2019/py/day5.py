@@ -1,4 +1,3 @@
-from __future__ import print_function
 from intcode_cpu import IntcodeCPU
 
 memory = [
@@ -50,10 +49,10 @@ memory = [
 
 cpu = IntcodeCPU()
 output = cpu.run_program(memory, [1])
-print(output)
+print("part 1: {}".format(output[-1]))
 assert output == [0, 0, 0, 0, 0, 0, 0, 0, 0, 6069343]
 
 output = cpu.run_program(memory, [5])
-print(output)
+print("part 2: {}".format(output[-1]))
 assert output == [3188550]
 

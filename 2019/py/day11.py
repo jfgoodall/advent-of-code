@@ -1,4 +1,3 @@
-from __future__ import print_function
 from collections import defaultdict
 from enum import Enum
 import operator
@@ -45,26 +44,27 @@ def paint_hull(memory, starting_color):
 with open('day11.dat') as f:
     memory = f.readlines()
     assert len(memory) == 1
-    memory = map(int, memory[0].strip().split(','))
+    memory = list(map(int, memory[0].strip().split(',')))
 
 colors = paint_hull(memory, 0)
-print('painted tiles: {}'.format(len(colors)))
+print("part 1: {}".format(len(colors)))
 
 colors = paint_hull(memory, 1)
-x_extents = (min(colors.viewkeys(), key=operator.itemgetter(0))[0],
-             max(colors.viewkeys(), key=operator.itemgetter(0))[0])
-y_extents = (min(colors.viewkeys(), key=operator.itemgetter(1))[1],
-             max(colors.viewkeys(), key=operator.itemgetter(1))[1])
+x_extents = (min(colors.keys(), key=operator.itemgetter(0))[0],
+             max(colors.keys(), key=operator.itemgetter(0))[0])
+y_extents = (min(colors.keys(), key=operator.itemgetter(1))[1],
+             max(colors.keys(), key=operator.itemgetter(1))[1])
 width = x_extents[1] - x_extents[0] + 1
 height = y_extents[1] - y_extents[0] + 1
 # print('width: {}, height: {}'.format(width, height))
 
 raster = [[u'\u2591' for _ in range(width)] for _ in range(height)]
-for coord, color in colors.viewitems():
+for coord, color in colors.items():
     x = coord[0]-x_extents[0]
     y = coord[1]-y_extents[0]
     if color == 1:
         raster[y][x] = u'\u2588'
 
+print("part 2:")
 for line in reversed(raster):
     print(''.join(line))

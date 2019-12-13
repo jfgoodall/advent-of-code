@@ -1,4 +1,3 @@
-from __future__ import print_function
 import itertools
 
 memory = [
@@ -28,10 +27,13 @@ def run_intcode(memory, n, v):
     return memory[0]
 
 mem = memory[:]
-print(run_intcode(mem, 12, 2))
+output = run_intcode(mem, 12, 2)
+print("part 1: {}".format(output))
+assert output == 3716293
 
 for n, v in itertools.product(range(100), repeat=2):
     mem = memory[:]
     if run_intcode(mem, n, v) == 19690720:
-        print("{}, {}: {}".format(n, v, n*100+v))
+        print("part 2: {} ({}, {})".format(n*100+v, n, v))
+        assert n*100+v == 6429
         break
