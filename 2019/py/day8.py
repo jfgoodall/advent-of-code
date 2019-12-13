@@ -1,3 +1,4 @@
+#/usr/bin/env python3
 IMAGE_SIZE = 25*6
 
 def load_image():

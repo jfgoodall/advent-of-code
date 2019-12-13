@@ -1,3 +1,4 @@
+#/usr/bin/env python3
 from collections import defaultdict
 from enum import Enum
 import operator

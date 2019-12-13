@@ -1,3 +1,4 @@
+#/usr/bin/env python3
 from fractions import gcd
 from collections import defaultdict
 import math

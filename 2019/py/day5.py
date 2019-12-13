@@ -1,3 +1,4 @@
+#/usr/bin/env python3
 from intcode_cpu import IntcodeCPU
 
 memory = [
