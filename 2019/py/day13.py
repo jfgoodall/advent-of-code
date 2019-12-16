@@ -10,13 +10,9 @@ class Tile(Enum):
     Paddle = 3
     Ball = 4
 
-with open('day13.dat') as f:
-    memory = f.readlines()
-    assert len(memory) == 1
-    memory = list(map(int, memory[0].strip().split(',')))
-
 
 cpu = IntcodeCPU()
+memory = cpu.load_memory_from_file('day13.dat')
 output = cpu.run_program(memory)
 block_tiles = [t for t in output[2::3] if Tile(t) == Tile.Block]
 print("part 1: {}".format(len(block_tiles)))

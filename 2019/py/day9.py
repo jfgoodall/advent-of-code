@@ -12,11 +12,7 @@ assert cpu.run_program(example_mem) == [1219070632396864]
 example_mem = [104,1125899906842624,99]
 assert cpu.run_program(example_mem) == [example_mem[1]]
 
-with open('day9.dat') as f:
-    memory = f.readlines()
-    assert len(memory) == 1
-    memory = list(map(int, memory[0].strip().split(',')))
-
+memory = cpu.load_memory_from_file('day9.dat')
 output = cpu.run_program(memory, [1])
 print("part 1: {}".format(output[0]))
 assert output == [2436480432]

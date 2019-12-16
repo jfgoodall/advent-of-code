@@ -160,3 +160,10 @@ class IntcodeCPU:
     def halted(self):
         return self._halted
 
+    @staticmethod
+    def load_memory_from_file(filename):
+        with open(filename) as f:
+            memory = f.readlines()
+            assert len(memory) == 1
+            return list(map(int, memory[0].strip().split(',')))
+

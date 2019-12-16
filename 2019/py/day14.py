@@ -1,8 +1,6 @@
 #/usr/bin/env python3
 from collections import defaultdict
 import math
-import pprint
-pp = pprint.PrettyPrinter(width=80, indent=4)
 
 def parse_recipe(recipe):
     reactions = {}
@@ -52,7 +50,7 @@ def calc_ore_cost(reactions, fuel_to_create=1, debug=False):
 def calc_max_fuel(reactions, est_ore_per_fuel, ore_reserves=1000000000000):
     fuel = ore_reserves // est_ore_per_fuel
     ore_cost = calc_ore_cost(reactions, fuel_to_create=fuel)
-    while ore_cost <= ore_reserves:
+    while ore_cost < ore_reserves:
         fuel += int(fuel * 0.5)
         ore_cost = calc_ore_cost(reactions, fuel_to_create=fuel)
 

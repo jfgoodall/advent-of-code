@@ -42,10 +42,7 @@ def paint_hull(memory, starting_color):
 
     return colors
 
-with open('day11.dat') as f:
-    memory = f.readlines()
-    assert len(memory) == 1
-    memory = list(map(int, memory[0].strip().split(',')))
+memory = IntcodeCPU.load_memory_from_file('day11.dat')
 
 colors = paint_hull(memory, 0)
 print("part 1: {}".format(len(colors)))
