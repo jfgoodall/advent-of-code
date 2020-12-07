@@ -26,19 +26,15 @@ def solve(passports, strict=False):
                 valid += 1
     return valid
 
-def parse_input(lines):
+def parse_input(test_input):
     passports = []
-    pp = {}
-    for line in lines:
-        line = line.strip()
-        if line:
-            for field in line.split():
-                k, v = field.split(':')
-                pp[k] = v
-        elif pp:
-            passports.append(pp)
-            pp = {}
-    if pp:
+    entries = test_input.split('\n\n')
+    for entry in entries:
+        entry = entry.replace('\n', ' ')
+        pp = {}
+        for field in entry.split():
+            k, v = field.split(':')
+            pp[k] = v
         passports.append(pp)
     return passports
 
@@ -58,12 +54,12 @@ hgt:179cm
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in
 """
-    passports = parse_input(test_input.split('\n'))
+    passports = parse_input(test_input)
     assert solve(passports) == 2
 
 if __name__ == '__main__':
     test_solve()
     with open('day04-input.dat') as infile:
-        test_input = parse_input(infile)
+        test_input = parse_input(infile.read())
     print(f"Part 1: {solve(test_input)}")
     print(f"Part 2: {solve(test_input, strict=True)}")
