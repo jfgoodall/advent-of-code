@@ -27,14 +27,11 @@ def solve(passports, strict=False):
     return valid
 
 def parse_input(test_input):
+    import re
     passports = []
-    entries = test_input.split('\n\n')
-    for entry in entries:
-        entry = entry.replace('\n', ' ')
-        pp = {}
-        for field in entry.split():
-            k, v = field.split(':')
-            pp[k] = v
+    for entry in test_input.split('\n\n'):
+        pp = {field.split(':')[0]: field.split(':')[1]
+                for field in re.split(r'[ \n]', entry.strip())}
         passports.append(pp)
     return passports
 
@@ -53,7 +50,7 @@ hgt:179cm
 
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in
-"""
+""".strip()
     passports = parse_input(test_input)
     assert solve(passports) == 2
 
