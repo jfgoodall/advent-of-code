@@ -25,8 +25,7 @@ def test_solve():
 #.##...#...
 #...##....#
 .#..#...#.#
-""".strip()
-    test_input = [line.strip() for line in test_input.split('\n')]
+""".strip().split('\n')
     assert solve(test_input, 3, 1) == 7
 
 if __name__ == '__main__':

@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
+from functools import lru_cache
 
+class hashabledict(dict):
+    def __hash__(self):
+        return hash(frozenset(self.items()))
+
+@lru_cache(maxsize=None)
 def holds_color(rules, bag_color, target_color):
     holds = rules[bag_color]
     if target_color in holds:
@@ -16,6 +22,7 @@ def solve_part1(rules):
             holds_gold.add(bag_color)
     return len(holds_gold)
 
+@lru_cache(maxsize=None)
 def count_held(rules, bag_color):
     total_count = 0
     for bag, count in rules[bag_color].items():
@@ -29,11 +36,11 @@ def parse_input(lines):
     """ creates a dict of dicts: rules[color] = {'color': count, ...} """
     import re
     rule_re = re.compile(r'(\d+ ?)?(\w+ \w+) bags?')
-    rules = {}
+    rules = hashabledict()
     for line in lines:
         matches = rule_re.findall(line)
         rule_label = matches[0][1]
-        rule = {}
+        rule = hashabledict()
         for pair_idx in range(1, len(matches)):
             count, label = matches[pair_idx]
             if count:

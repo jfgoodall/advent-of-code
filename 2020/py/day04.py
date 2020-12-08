@@ -19,9 +19,10 @@ def validate_fields(pp):
     return valid
 
 def solve(passports, strict=False):
+    FIELD_SET = {'byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid'}
     valid = 0
     for pp in passports:
-        if {'byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid'}.issubset(pp.keys()):
+        if FIELD_SET.issubset(pp.keys()):
             if not strict or validate_fields(pp):
                 valid += 1
     return valid
