@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from enum import Enum
 
 def validate(numbers, idx, preamble):
     from itertools import combinations
