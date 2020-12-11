@@ -1,43 +1,17 @@
 #!/usr/bin/env python3
+from functools import reduce
 
 def solve_part1(lines):
-    groups = []
-    qs = set()
-    for line in lines:
-        line = line.strip()
-        if not line:
-            if qs:
-                groups.append(qs)
-                qs = set()
-        else:
-            for c in list(line):
-                qs.add(c)
-    groups.append(qs)
-    total = 0
-    for g in groups:
-        total += len(g)
-    return total
+    groups = [set(entry.replace('\n', '')) for entry in lines.split('\n\n')]
+    return reduce(lambda total, group: total+len(group), groups, 0)
 
 def solve_part2(lines):
-    groups = []
-    qs = []
-    for line in lines:
-        line = line.strip()
-        if not line:
-            if qs:
-                groups.append(qs)
-                qs = []
-        else:
-            qs.append(set(list(line)))
-    if qs:
-        groups.append(qs)
-    total = 0
-    for g in groups:
-        total += len(set.intersection(*g))
-    return total
+    groups = [[set(line) for line in entry.split('\n')] for entry in lines.split('\n\n')]
+    return reduce(lambda total, group: total+len(set.intersection(*group)), groups, 0)
 
 def test_solve():
-    test_input = """abc
+    test_input = """
+abc
 
 a
 b
@@ -51,13 +25,14 @@ a
 a
 a
 
-b"""
-    assert solve_part1(test_input.split('\n')) == 11
-    assert solve_part2(test_input.split('\n')) == 6
+b
+""".strip()
+    assert solve_part1(test_input) == 11
+    assert solve_part2(test_input) == 6
 
 if __name__ == '__main__':
     test_solve()
     with open('day06-input.dat') as infile:
-        print(f"Part 1: {solve_part1(infile)}")
-    with open('day06-input.dat') as infile:
-        print(f"Part 2: {solve_part2(infile)}")
+        lines = infile.read().strip()
+    print(f"Part 1: {solve_part1(lines)}")
+    print(f"Part 2: {solve_part2(lines)}")
