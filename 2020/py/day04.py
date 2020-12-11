@@ -19,26 +19,20 @@ def validate_fields(pp):
     return valid
 
 def solve(passports, strict=False):
+    FIELD_SET = {'byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid'}
     valid = 0
     for pp in passports:
-        if {'byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid'}.issubset(pp.keys()):
+        if FIELD_SET.issubset(pp.keys()):
             if not strict or validate_fields(pp):
                 valid += 1
     return valid
 
-def parse_input(lines):
+def parse_input(test_input):
+    import re
     passports = []
-    pp = {}
-    for line in lines:
-        line = line.strip()
-        if line:
-            for field in line.split():
-                k, v = field.split(':')
-                pp[k] = v
-        elif pp:
-            passports.append(pp)
-            pp = {}
-    if pp:
+    for entry in test_input.split('\n\n'):
+        pp = {field.split(':')[0]: field.split(':')[1]
+                for field in re.split(r'[ \n]', entry.strip())}
         passports.append(pp)
     return passports
 
@@ -57,13 +51,13 @@ hgt:179cm
 
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in
-"""
-    passports = parse_input(test_input.split('\n'))
+""".strip()
+    passports = parse_input(test_input)
     assert solve(passports) == 2
 
 if __name__ == '__main__':
     test_solve()
     with open('day04-input.dat') as infile:
-        test_input = parse_input(infile)
+        test_input = parse_input(infile.read())
     print(f"Part 1: {solve(test_input)}")
     print(f"Part 2: {solve(test_input, strict=True)}")

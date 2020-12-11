@@ -1,29 +1,24 @@
 #!/usr/bin/env python3
 from collections import defaultdict
 
-def solve(code):
-    row = 0
-    for char in code[:7]:
-        row = row * 2
-        if char == 'B':
-            row = row + 1
-    col = 0
-    for char in code[7:]:
-        col = col * 2
-        if char == 'R':
-            col = col + 1
-    seat = row * 8 + col
+def parse_boarding_pass(code):
+    import re
+    # (B, F, R, L) -> (1, 0, 1, 0)
+    code = re.sub(r'.', lambda ch: '1' if ch.group(0) in 'BR' else '0', code.strip())
+    seat = int(code, base=2)
+    row = seat >> 3
+    col = seat & 0b111
     return row, col, seat
 
-def test_solve():
-    assert solve("BFFFBBFRRR") == (70, 7, 567)
-    assert solve("FFFBBBFRRR") == (14, 7, 119)
-    assert solve("BBFFBBFRLL") == (102, 4, 820)
+def test_parse_boarding_pass():
+    assert parse_boarding_pass("BFFFBBFRRR") == (70, 7, 567)
+    assert parse_boarding_pass("FFFBBBFRRR") == (14, 7, 119)
+    assert parse_boarding_pass("BBFFBBFRLL") == (102, 4, 820)
 
 if __name__ == '__main__':
-    test_solve()
+    test_parse_boarding_pass()
     with open('day05-input.dat') as infile:
-        seats = [solve(line.strip()) for line in infile]
+        seats = [parse_boarding_pass(line.strip()) for line in infile]
 
     print(f"Part 1: {max(seats, key=lambda x: x[2])[2]}")
 
