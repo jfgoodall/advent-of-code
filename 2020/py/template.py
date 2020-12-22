@@ -15,7 +15,7 @@ def run_tests():
     test_input = """
 """.strip().split('\n')
     parsed = parse_input(test_input)
-    # assert part1(parsed _input) == 165
+    # assert part1(parsed) == 165
 
 if __name__ == '__main__':
     run_tests()
