@@ -10,16 +10,16 @@ from collections import Counter
 import itertools
 
 DIGIT_MAP = {
-        'abcefg': 0,
-        'cf': 1,
-        'acdeg': 2,
-        'acdfg': 3,
-        'bcdf': 4,
-        'abdfg': 5,
-        'abdefg': 6,
-        'acf': 7,
-        'abcdefg': 8,
-        'abcdfg': 9
+        'abcefg': '0',
+        'cf': '1',
+        'acdeg': '2',
+        'acdfg': '3',
+        'bcdf': '4',
+        'abdfg': '5',
+        'abdefg': '6',
+        'acf': '7',
+        'abcdefg': '8',
+        'abcdfg':'9'
     }
 DIGIT_SET = set(DIGIT_MAP.keys())
 
@@ -29,26 +29,23 @@ def part1(lines):
         counts.update(len(val) for val in line[1])
     return sum(counts[x] for x in (2, 3, 4, 7))
 
-def translate(s, table):
-    return ''.join(sorted(table[ch] for ch in s))
+def translate(digit, table):
+    return ''.join(sorted(table[segment] for segment in digit))
 
 def part2(lines):
     output_sum = 0
     for line in tqdm(lines):
         # brute forcing 7! possible translations
         for perm in itertools.permutations('abcdefg'):
-            table = {'abcdefg'[i]: perm[i] for i in range(len(perm))}
+            table = dict(zip('abcdefg', perm))
             xlated = {translate(digit, table) for digit in line[0]}
             if xlated == DIGIT_SET:
                 break
         else:
             assert False
 
-        value = 0
-        xlated = [translate(digit, table) for digit in line[1]]
-        for digit in xlated:
-            value = value * 10 + DIGIT_MAP[digit]
-        output_sum += value
+        output_sum += int(''.join(DIGIT_MAP[translate(digit, table)]
+                          for digit in line[1]))
     return output_sum
 
 def parse_input(data_src):
