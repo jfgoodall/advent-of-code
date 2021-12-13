@@ -18,21 +18,20 @@ def print_grid(grid):
 def fold_grid(grid, fold):
     axis, crease = fold[0], int(fold[1])
     if axis == 'x':
-        left = grid[:, :crease]
-        right = np.flip(grid[:, crease+1:], axis=1)
-        if left.shape[1] > right.shape[1]:
-            right = np.pad(right, ((0, 0), (left.shape[1]-right.shape[1], 0)))
-        else:
-            left = np.pad(left, ((0, 0), (0, right.shape[1]-left.shape[1])))
-        grid = left | right
-    else:  # y
-        top = grid[:crease, :]
-        bottom = np.flip(grid[crease+1:, :], axis=0)
-        if top.shape[0] > bottom.shape[0]:
-            bottom = np.pad(bottom, ((top.shape[0]-bottom.shape[0], 0), (0, 0)))
-        else:
-            top = np.pad(top, ((0, bottom.shape[0]-top.shape[0]), (0, 0)))
-        grid = top | bottom
+        grid = grid.T
+
+    top = grid[:crease, :]
+    bottom = np.flip(grid[crease+1:, :], axis=0)
+
+    padding = top.shape[0] - bottom.shape[0]
+    if padding > 0:
+        bottom = np.pad(bottom, ((padding, 0), (0, 0)))
+    elif padding:
+        top = np.pad(top, ((0, -padding), (0, 0)))
+    grid = top | bottom
+
+    if axis == 'x':
+        grid = grid.T
     return grid
 
 def part1(grid, folds):
