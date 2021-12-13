@@ -12,7 +12,7 @@ except ImportError:
 def print_grid(grid):
     for row in range(grid.shape[0]):
         for col in range(grid.shape[1]):
-            print('#' if grid[row, col] else '.', end='')
+            print(u'\u25cf'*2 if grid[row, col] else '  ', end='')
         print()
 
 def fold_grid(grid, fold):
