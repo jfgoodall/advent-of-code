@@ -24,31 +24,47 @@ def grid_to_graph(grid):
         if c[1] < grid.shape[1]-1:
             n = (c[0], c[1]+1)
             graph[c].add((n, grid[n]))
-    return graph
+    return graph  # {coord: {(neighbor_coord, distance)}
 
 def dijkstra(graph, target):
-    max_dist = len(graph)**2 * 9
+    MAX_DIST = len(graph)**2 * 9
 
-    Q = list(graph.keys())
-    Q2 = set(Q)
-    dist = {v: max_dist for v in Q}
-    dist[(0, 0)] = 0
-    prev = {v: None for v in Q}
+    class Node:
+        __slots__ = 'coord', 'dist', 'visited', 'removed'
+        def __init__(self, coord, dist=MAX_DIST):
+            self.coord = coord
+            self.dist = dist
+            self.visited = False
+            self.removed = False
+        def __lt__(self, other):
+            return self.dist < other.dist
 
-    while Q:
-        Q.sort(key=lambda x: dist[x])
-        u = Q.pop(0)
-        if u == target:
-            break
-        Q2.remove(u)
-        for v, d in graph[u]:
-            if v in Q2:
-                alt = dist[u] + d
-                if alt < dist[v]:
-                    dist[v] = alt
-                    prev[v] = u
+    heap = [Node(n) for n in graph.keys()]
+    coord_map = {n.coord: n for n in heap}
+    coord_map[(0, 0)].dist = 0
+    heapq.heapify(heap)
 
-    return dist[target]
+    with tqdm(total=len(heap), ncols=80, leave=False) as progress:
+        while heap:
+            node = heapq.heappop(heap)
+            if node.removed:
+                continue
+            if node.coord == target:
+                break
+            node.visited = True
+            for neighbor, dist in graph[node.coord]:
+                if not coord_map[neighbor].visited:
+                    if node.dist+dist < coord_map[neighbor].dist:
+                        old = coord_map[neighbor]
+                        old.removed = True
+                        new = Node(old.coord, node.dist+dist)
+                        coord_map[neighbor] = new
+                        heapq.heappush(heap, new)
+            progress.update(1)
+        progress.n = progress.total
+        progress.refresh()
+
+    return coord_map[target].dist
 
 def part1(grid):
     graph = grid_to_graph(grid)
@@ -108,4 +124,4 @@ if __name__ == '__main__':
     run_tests()
     with open(__file__[:-3] + '-input.dat') as infile:
         print_result('1', part1, parse_input(infile))  # 685
-        print_result('2', part2, parse_input(infile))  # -
+        print_result('2', part2, parse_input(infile))  # 2995
