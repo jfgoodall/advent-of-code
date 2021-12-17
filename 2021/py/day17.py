@@ -10,7 +10,7 @@ except ImportError:
         return iterable
 
 def max_height(vel, target):
-    vx, vy = vel
+    dx, dy = vel
     x, y = 0, 0
     max_height = y
     while True:
@@ -19,33 +19,31 @@ def max_height(vel, target):
             return max_height
         if x > target[0][1] or y < target[1][0]:
             return None
-        x += vx
-        y += vy
-        vx = max(0, vx-1)
-        vy -= 1
+        x += dx
+        y += dy
+        dx = max(0, dx-1)
+        dy -= 1
+
+def find_valid_heights(target):
+    heights = []
+    for dy in range(target[1][0], -target[1][0]):
+        for dx in range(1, target[0][1]+1):
+            h = max_height((dx, dy), target)
+            if h is not None:
+                heights.append(h)
+    return heights
 
 def part1(target):
-    max_h = target[1][0]
-    for vy in range(target[1][0], 500):
-        for vx in range(1, target[0][1]+1):
-            h = max_height((vx, vy), target)
-            if h is not None:
-                max_h = max(max_h, h)
-    return max_h
+    return max(find_valid_heights(target))
 
 def part2(target):
-    valid_count = 0
-    for vy in range(target[1][0], 500):
-        for vx in range(1, target[0][1]+1):
-            if max_height((vx, vy), target) is not None:
-                valid_count += 1
-    return valid_count
+    return len(find_valid_heights(target))
 
 def parse_input(data_src):
     data_src.seek(0)
-    match = re.match(r'target area: x=(\d+)\.\.(\d+), y=(-?\d+)\.\.(-?\d+)',
-                     next(data_src).strip())
-    vals = list(map(int, match.groups()))
+    match = re.findall(r'x=(\d+)\.\.(\d+), y=(-?\d+)\.\.(-?\d+)',
+                       next(data_src).strip())[0]
+    vals = list(map(int, match))
     return vals[:2], vals[2:]
 
 def run_tests():
