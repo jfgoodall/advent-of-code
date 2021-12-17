@@ -26,52 +26,7 @@ def grid_to_graph(grid):
             graph[c].add((n, grid[n]))
     return graph  # {coord: {(neighbor_coord, distance)}
 
-def dijkstra(graph, target):
-    MAX_DIST = len(graph)**2 * 9
-
-    class Node:
-        __slots__ = 'coord', 'dist', 'visited', 'removed'
-        def __init__(self, coord, dist=MAX_DIST):
-            self.coord = coord
-            self.dist = dist
-            self.visited = False
-            self.removed = False
-        def __lt__(self, other):
-            return self.dist < other.dist
-
-    heap = [Node(n) for n in graph.keys()]
-    coord_map = {n.coord: n for n in heap}
-    coord_map[(0, 0)].dist = 0
-    heapq.heapify(heap)
-
-    with tqdm(total=len(heap), ncols=80, leave=False) as progress:
-        while heap:
-            node = heapq.heappop(heap)
-            if node.removed:
-                continue
-            if node.coord == target:
-                break
-            node.visited = True
-            for neighbor, dist in graph[node.coord]:
-                if not coord_map[neighbor].visited:
-                    if node.dist+dist < coord_map[neighbor].dist:
-                        old = coord_map[neighbor]
-                        old.removed = True
-                        new = Node(old.coord, node.dist+dist)
-                        coord_map[neighbor] = new
-                        heapq.heappush(heap, new)
-            progress.update(1)
-        progress.n = progress.total
-        progress.refresh()
-
-    return coord_map[target].dist
-
-def part1(grid):
-    graph = grid_to_graph(grid)
-    target = (grid.shape[0]-1, grid.shape[1]-1)
-    return dijkstra(graph, target)
-
-def part2(grid):
+def bigify_grid(grid):
     def increment_grid(g):
         return np.where(g+1>9, 1, g+1)
 
@@ -84,11 +39,89 @@ def part2(grid):
             big[row*grid.shape[0]:(row+1)*grid.shape[0],
                 col*grid.shape[1]:(col+1)*grid.shape[1]] = g
             g = increment_grid(g)
-    grid = big
+    return big
 
+def dijkstra(graph, target):
+    class Node:
+        __slots__ = 'coord', 'dist', 'removed'
+        def __init__(self, coord, dist):
+            self.coord = coord
+            self.dist = dist
+            self.removed = False
+        def __lt__(self, other):
+            return self.dist < other.dist
+
+    heap = []
+    coord_map = {}
+
+    def add_node(coord, dist):
+        node = Node(coord, dist)
+        coord_map[coord] = node
+        heapq.heappush(heap, node)
+
+    add_node((0, 0), 0)
+    while heap:
+        current = heapq.heappop(heap)
+        if current.removed:
+            continue
+        if current.coord == target:
+            break
+        for neighbor, dist in graph[current.coord]:
+            if neighbor in coord_map:
+                if current.dist+dist < coord_map[neighbor].dist:
+                    coord_map[neighbor].removed = True
+                    add_node(neighbor, current.dist+dist)
+            else:
+                add_node(neighbor, current.dist+dist)
+
+    return coord_map[target].dist
+
+def a_star(graph, target):
+    class Node:
+        __slots__ = 'coord', 'dist', 'fscore', 'removed'
+        def __init__(self, coord, dist):
+            self.coord = coord
+            self.dist = dist
+            self.fscore = dist + target[0]-coord[0] + target[1]-coord[1]
+            self.removed = False
+        def __lt__(self, other):
+            return self.fscore < other.fscore
+
+    heap = []
+    coord_map = {}
+
+    def add_node(coord, dist):
+        node = Node(coord, dist)
+        coord_map[coord] = node
+        heapq.heappush(heap, node)
+
+    add_node((0, 0), 0)
+    while heap:
+        current = heapq.heappop(heap)
+        if current.removed:
+            continue
+        if current.coord == target:
+            break
+        for neighbor, dist in graph[current.coord]:
+            if neighbor in coord_map:
+                if current.dist+dist < coord_map[neighbor].dist:
+                    coord_map[neighbor].removed = True
+                    add_node(neighbor, current.dist+dist)
+            else:
+                add_node(neighbor, current.dist+dist)
+
+    return coord_map[target].dist
+
+def part1(algo, grid):
     graph = grid_to_graph(grid)
     target = (grid.shape[0]-1, grid.shape[1]-1)
-    return dijkstra(graph, target)
+    return algo(graph, target)
+
+def part2(algo, grid):
+    grid = bigify_grid(grid)
+    graph = grid_to_graph(grid)
+    target = (grid.shape[0]-1, grid.shape[1]-1)
+    return algo(graph, target)
 
 def parse_input(data_src):
     data_src.seek(0)
@@ -111,8 +144,10 @@ def run_tests():
 2311944581
 """
     test_data = StringIO(TEST_INPUT.strip())
-    assert part1(parse_input(test_data)) == 40
-    assert part2(parse_input(test_data)) == 315
+    assert part1(dijkstra, parse_input(test_data)) == 40
+    assert part1(a_star, parse_input(test_data)) == 40
+    assert part2(dijkstra, parse_input(test_data)) == 315
+    assert part2(a_star, parse_input(test_data)) == 315
 
 def print_result(part_label, part_fn, *args):
     start = time.perf_counter()
@@ -123,5 +158,11 @@ def print_result(part_label, part_fn, *args):
 if __name__ == '__main__':
     run_tests()
     with open(__file__[:-3] + '-input.dat') as infile:
-        print_result('1', part1, parse_input(infile))  # 685
-        print_result('2', part2, parse_input(infile))  # 2995
+        print_result('1 Dijkstra', functools.partial(part1, dijkstra),
+                     parse_input(infile))  # 685
+        print_result('1 A*      ', functools.partial(part1, a_star),
+                     parse_input(infile))  # 685
+        print_result('2 Dijkstra', functools.partial(part2, dijkstra),
+                     parse_input(infile))  # 2995
+        print_result('2 A*      ', functools.partial(part2, a_star),
+                     parse_input(infile))  # 2995
