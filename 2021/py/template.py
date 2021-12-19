@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import time, itertools, functools
+import time, itertools, functools, re
 import numpy as np
 from io import StringIO
 from collections import Counter, defaultdict
