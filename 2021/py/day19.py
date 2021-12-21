@@ -29,15 +29,28 @@ a,b,c ->
     z,-x,-y   -z,-y,-x
     z,y,-x    -z,-x,y
 """
-
 ORIENTATIONS = [
-    (1,2,3), (1,-3,2), (1,-2,-3), (1,3,-2),
-    (-1,3,2), (-1,2,-3), (-1,-3,-2), (-1,-2,3),
-    (2,3,1), (2,-1,3), (2,-3,-1), (2,1,-3),
-    (-2,1,3), (-2,3,-1), (-2,-1,-3), (-2,-3,1),
-    (3,1,2), (3,-2,1), (3,-1,-2), (3,2,-1),
-    (-3,2,1), (-3,1,-2), (-3,-2,-1), (-3,-1,2)
+    ( 1, 2, 3), ( 1,-3, 2), ( 1,-2,-3), ( 1, 3,-2),
+    (-1, 3, 2), (-1, 2,-3), (-1,-3,-2), (-1,-2, 3),
+    ( 2, 3, 1), ( 2,-1, 3), ( 2,-3,-1), ( 2, 1,-3),
+    (-2, 1, 3), (-2, 3,-1), (-2,-1,-3), (-2,-3, 1),
+    ( 3, 1, 2), ( 3,-2, 1), ( 3,-1,-2), ( 3, 2,-1),
+    (-3, 2, 1), (-3, 1,-2), (-3,-2,-1), (-3,-1, 2)
 ]
+
+"""
+alternative: generate all rotation matrices that produce right-handed results
+(performance ~2x slower than using ORIENTATIONS)
+
+BASES = (((1, 0, 0), (-1, 0, 0)),  # x
+         ((0, 1, 0), (0, -1, 0)),  # y
+         ((0, 0, 1), (0, 0, -1)))  # z
+ROTATIONS = [np.array(x) for m in itertools.product(*BASES)
+                         for x in itertools.permutations(m)
+             if np.all(np.cross(x[0], x[1]) == x[2])]
+
+rotated = tuple(ROTATIONS[n] @ coord)
+"""
 
 def reorient(coords, rho):
     sign = (rho[0]//abs(rho[0]), rho[1]//abs(rho[1]), rho[2]//abs(rho[2]))
