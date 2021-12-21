@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import time, itertools, functools
+import time, itertools, functools, re
 import numpy as np
 from io import StringIO
 from collections import Counter, defaultdict
@@ -22,7 +22,7 @@ def parse_input(data_src):
     return parsed
 
 def run_tests():
-    TEST_INPUT = """
+    TEST_INPUT = r"""
 test data
 """
     test_data = StringIO(TEST_INPUT.strip())
