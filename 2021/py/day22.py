@@ -3,114 +3,157 @@ import time, itertools, functools, re
 import numpy as np
 from io import StringIO
 from collections import Counter, defaultdict
+from typing import NamedTuple
 try:
     from tqdm import tqdm
 except ImportError:
     def tqdm(iterable=None, **kwargs):
         return iterable
 
+class Prism(NamedTuple):
+    x: tuple
+    y: tuple
+    z: tuple
+
 def part1(cmds):
     grid = np.zeros((101, 101, 101), dtype=bool)
-    for cmd, coords in cmds:
-        grid[coords[0][0]+50:coords[0][1]+51,
-             coords[1][0]+50:coords[1][1]+51,
-             coords[2][0]+50:coords[2][1]+51] = cmd == 'on'
+    for cmd, prism in cmds:
+        grid[prism.x[0]+50:prism.x[1]+51,
+             prism.y[0]+50:prism.y[1]+51,
+             prism.z[0]+50:prism.z[1]+51] = cmd == 'on'
+        print(f'p1 -- {grid.sum()}')
+    print(grid.sum())
     return grid.sum()
 
-def contains(c1, c2) -> bool:
-    """check if c1 contains c2 (total overlap)"""
-    return (c2[0][0] >= c1[0][0] and c2[0][1] <= c1[0][1] and
-            c2[1][0] >= c1[1][0] and c2[1][1] <= c1[1][1] and
-            c2[2][0] >= c1[2][0] and c2[2][1] <= c1[2][1])
+def contains(A, B) -> bool:
+    """check if A contains B (total overlap)"""
+    return (B.x[0] >= A.x[0] and B.x[1] <= A.x[1] and
+            B.y[0] >= A.y[0] and B.y[1] <= A.y[1] and
+            B.z[0] >= A.z[0] and B.z[1] <= A.z[1])
 
-def overlaps(c1, c2) -> bool:
-    """check if c1 overlaps c2 (any overlap)"""
-    return not (c1[0][1] <= c2[0][0] or c2[0][1] <= c1[0][0] or
-                c1[1][1] <= c2[1][0] or c2[1][1] <= c1[1][0] or
-                c1[2][1] <= c2[2][0] or c2[2][1] <= c1[2][0])
+def overlaps(A, B) -> bool:
+    """check if A overlaps B (any overlap)"""
+    ### I THINK THIS IS WRONG
+    return not (A.x[1] <= B.x[0] or B.x[1] <= A.x[0] or
+                A.y[1] <= B.y[0] or B.y[1] <= A.y[0] or
+                A.z[1] <= B.z[0] or B.z[1] <= A.z[0])
 
-def get_overlap(c1, c2):
-    assert not (contains(c1, c2) or contains(c2, c1))
-    if not overlaps(c1, c2):
-        return None
-    if c2[0][0] < c1[0][1]:
-        x = (c2[0][0], c1[0][1])
-    else:
-        x = (c1[0][0], c2[0][1])
+def fracture(A, B):
+    """fracture B into sub-prisms, returning non-overlapping fragments with A"""
+    xs = {i for group in (A, B) for prism in group for i in prism.x}
+    ys = {i for group in (A, B) for prism in group for i in prism.y}
+    zs = {i for group in (A, B) for prism in group for i in prism.z}
+    xs = sorted(list(xs))
+    ys = sorted(list(ys))
+    zs = sorted(list(zs))
+    fragments = [Prism(*coord)
+                 for coord in itertools.product(zip(xs, xs[1:]),
+                                                zip(ys, ys[1:]),
+                                                zip(zs, zs[1:]))]
+    b_frags = set(filter(lambda f: any(contains(b, f) for b in B) and
+                                   not any(contains(a, f) for a in A),
+                         fragments))
 
-    if c2[1][0] < c1[1][1]:
-        y = (c2[1][0], c1[1][1])
-    else:
-        y = (c1[1][0], c2[1][1])
+    overlap = set(filter(lambda f: any(contains(b, f) for b in B) and
+                                   any(contains(a, f) for a in A),
+                         fragments))
 
-    if c2[2][0] < c1[2][1]:
-        z = (c2[2][0], c1[2][1])
-    else:
-        z = (c1[2][0], c2[2][1])
+    v1 = sum(volume(f) for f in b_frags|overlap)
+    v2 = sum(volume(f) for f in B)
+    print(f'pieces: {v1}; B: {v2}')
+    b = next(iter(B))
+    for f in b_frags:
+        assert contains(b, f)
+    for f in set(fragments)-b_frags-overlap:
+        assert not overlaps(b, f)
+    return b_frags
 
-    return (x, y, z)
+def volume(prism):
+    return ((prism.x[1] - prism.x[0] + 1) *
+            (prism.y[1] - prism.y[0] + 1) *
+            (prism.z[1] - prism.z[0] + 1))
 
 def part2(cmds):
-    """
-        cuboids = set()  # each entry is non-overlapping region turned ON
-        for each cmd, newblock:
-            if ON:
-                for c in cuboid:
-                    if newblock overlaps c:
-                        fracture newblock into cuboids along c boundaries
-                        eliminate subblock completely overlapped by c
-                        add remaining subblocks to cuboids  # note they may overlap cuboids
-            if OFF:
-                for c in cuboid:
-                    if newblock overlaps c:
-                        remove c from cuboids
-                        fracture c into cuboids along newblock boundaries
-                        eliminate subblock completely overlapped by c
-                        add remaining subblocks to cuboids  # note they may overlap cuboids
-
-            while cuboids
-                for each pair c1, c2 in cuboids:
-                    if c1 completely overlaps c2:
-                        remove c2 from cuboids
-                    else if c2 completely overlaps c1:
-                        remove c1 from cuboids
-                for each pair c1, c2 in cuboids:
-                    if c1 overlaps c2:
-                        fracture c2 into cuboids along c1 boundaries
-                        eliminate subblock completely overlapped by c1
-                        add remaining subblocks to cuboids  # note they may overlap cuboids
-        return sum of volumes of cuboids
-    """
-
-    # redefine cuboids by their min 3-coord and size: ((x, y, z), (|x|, |y|, |z|))
-    # ((c[0][0], c[1][0], c[2][0]), (c[0][1]-c[0][0]+1, c[0][1]-c[0][0]+1, c[0][1]-c[0][0]+1))
-    # cuboids = []
-    # for cmd, c in cmds:
-    #     pass
-
-    c1 = ((0, 3), (0, 3), (0, 3))
-    c2 = ((4, 5), (4, 5), (4, 5))
-    c3 = ((1, 2), (1, 2), (1, 2))
-    c4 = ((2, 4), (2, 4), (2, 4))
-    c5 = ((-2, 1), (-2, 1), (-2, 1))
-    print(c1)
-    print(c5)
-    print(get_overlap(c1, c5))
-    print(get_overlap(c5, c1))
-    # print(overlaps(c1, c2))
-    # print(overlaps(c2, c1))
+    a = Prism(x=(-44, 5), y=(-27, 21), z=(-14, 35))
+    b = Prism(x=(-5, 5), y=(-27, 21), z=(-14, 33))
+    c1 = Prism((0, 3), (0, 3), (0, 3))
+    # c2 = Prism((4, 5), (4, 5), (4, 5))
+    c3 = Prism((1, 2), (1, 2), (1, 2))
+    # c4 = Prism((2, 4), (2, 4), (2, 4))
+    # c5 = Prism((-2, 1), (-2, 1), (-2, 1))
     # print(overlaps(c1, c3))
-    # print(overlaps(c3, c1))
-    # print(contains(c1, c3))
-    # print(contains(c3, c1))
+    # f = fracture(c1, c3)
+    # print('overlap:', f[0])
+    # print('frags', len(f[1]))
+    # [print(x) for x in f[1]]
+    # assert False
+
+    assert cmds[0][0] == 'on'
+
+    lit = {cmds[0][1]}
+    for cmd, newblock in cmds[1:3]:
+        print(f'p2 -- {sum(volume(prism) for prism in lit)}')
+        intersecting = {p for p in lit if overlaps(p, newblock)}
+
+        if cmd == 'on':
+            fragments = fracture(intersecting, [newblock])
+            print(f'ON: adding {len(fragments)} prisms')
+            lit |= fragments
+        else:  # cmd == 'off'
+            fragments = fracture([newblock], intersecting)
+            lit -= intersecting
+            lit |= fragments
+            # print(f'OFF: replacing {len(intersecting)} prisms with {len(fragments)}')
+
+    for p1, p2 in itertools.product(lit, repeat=2):
+        if p1 is not p2:
+            assert not overlaps(p1, p2)
+    v = sum(volume(prism) for prism in lit)
+    print(v)
+    return v
+
+
+    """
+    cuboids = []  # each entry is non-overlapping region turned ON
+    for each cmd, newblock in input:
+        if cmd is OFF:
+            for c in cuboid:
+                if newblock overlaps c:
+                    remove c from cuboids
+                    fracture c into cuboids along newblock boundaries
+                    eliminate subblock completely overlapped by c
+                    add remaining subblocks to cuboids  # these DON'T overlap other cuboids
+        else if cmd is ON:
+            for c in cuboid:
+                if newblock overlaps c:
+                    fracture newblock into cuboids along c boundaries
+                    eliminate subblock completely overlapped by c
+                    add remaining subblocks to cuboids  # note they MAY overlap cuboids
+
+        while cuboids
+            for each pair c1, c2 in cuboids:
+                if c1 completely overlaps c2:
+                    remove c2 from cuboids
+                else if c2 completely overlaps c1:
+                    remove c1 from cuboids
+            for each pair c1, c2 in cuboids:
+                if c1 overlaps c2:
+                    fracture c2 into cuboids along c1 boundaries
+                    eliminate subblock completely overlapped by c1
+                    add remaining subblocks to cuboids  # note they may overlap cuboids
+    return sum of volumes of cuboids
+    """
 
 def parse_input(data_src):
+    c = Prism((0, 1), (2, 3), (4, 5))
     data_src.seek(0)
     cmds = []
     for line in data_src:
         cmd = line.split()
         axes = cmd[1].split(',')
-        cmds.append((cmd[0], tuple([tuple(map(int, axes[x].split('=')[1].split('..'))) for x in range(3)])))
+        cmds.append((cmd[0],
+                     Prism(*[tuple(map(int, axes[x].split('=')[1].split('..')))
+                             for x in range(3)])))
     return cmds
 
 def run_tests():
@@ -125,6 +168,8 @@ off x=-43..-33,y=-45..-28,z=7..25
 on x=-33..15,y=-32..19,z=-34..11
 off x=35..47,y=-46..-34,z=-11..5
 on x=-14..36,y=-6..44,z=-16..29
+"""
+    EXTRA = """
 on x=-57795..-6158,y=29564..72030,z=20435..90618
 on x=36731..105352,y=-21140..28532,z=16094..90401
 on x=30999..107136,y=-53464..15513,z=8553..71215
