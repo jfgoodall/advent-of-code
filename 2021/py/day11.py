@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import itertools, functools
-import numpy as np
+import itertools
 from io import StringIO
-from collections import Counter, defaultdict
+
+import numpy as np
+
 try:
     from tqdm import tqdm
 except ImportError:

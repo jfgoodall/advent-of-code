@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from io import StringIO
-import numpy as np
+
 try:
     from tqdm import tqdm
 except ImportError:
@@ -8,6 +8,7 @@ except ImportError:
         return iterable
 from collections import Counter
 from functools import partial
+
 
 def part1(data, nbits):
     bit_counts = Counter()

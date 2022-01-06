@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from io import StringIO
+
 import numpy as np
+
 try:
     from tqdm import tqdm
 except ImportError:

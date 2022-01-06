@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import time, itertools, functools
-import numpy as np
+import functools
+import time
+from collections import Counter
 from io import StringIO
-from collections import Counter, defaultdict
+
 try:
     from tqdm import tqdm
 except ImportError:

@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
-import time, itertools, functools, re
-import numpy as np
-from io import StringIO
+# nopycln: file
+import functools
+import itertools
+import re
+import time
 from collections import Counter, defaultdict
+from io import StringIO
+
+import numpy as np
+
 try:
     from tqdm import tqdm
 except ImportError:

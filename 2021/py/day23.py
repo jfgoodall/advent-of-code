@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import time, itertools, functools, heapq
-import numpy as np
-from io import StringIO
-from collections import Counter, defaultdict
+import heapq
+import time
 from dataclasses import dataclass
+from io import StringIO
+
 try:
     from tqdm import tqdm
 except ImportError:

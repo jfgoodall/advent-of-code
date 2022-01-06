@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-import time, itertools, functools, math
-from io import StringIO
+import itertools
+import math
+import time
 from collections import deque
+from io import StringIO
+
 try:
     from tqdm import tqdm
 except ImportError:

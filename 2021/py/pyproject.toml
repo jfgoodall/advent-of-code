@@ -1,0 +1,10 @@
+[tool.black]
+line-length = 100
+
+[tool.pycln]
+all = true
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_gitignore = true
