@@ -10,14 +10,14 @@ def part1(sacks):
     total = 0
     for sack in sacks:
         l = len(sack) // 2
-        common = (set(sack[:l]) & set(sack[l:])).pop()
-        total += PRIORITY[common]
+        common = set(sack[:l]) & set(sack[l:])
+        total += PRIORITY[common.pop()]
     return total
 
 def part2(sacks):
     total = 0
-    for i in range(len(sacks) // 3):
-        common = set(sacks[i*3]) & set(sacks[i*3+1]) & set(sacks[i*3+2])
+    for i in range(0, len(sacks), 3):
+        common = set(sacks[i]) & set(sacks[i+1]) & set(sacks[i+2])
         total += PRIORITY[common.pop()]
 
     # alt version:
