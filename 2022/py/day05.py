@@ -24,7 +24,7 @@ def parse_input(data_src):
 
     # pre-commit doesn't like trailing whitespace in the test input string
     # below or in the input file; make the parsing work with or without them
-    initial = initial.split('\n')
+    initial = initial.splitlines()
     num_stacks = int(initial[-1].split()[-1])
     stacks = [[] for _ in range(num_stacks)]
     for line in reversed(initial[:-1]):
@@ -37,7 +37,7 @@ def parse_input(data_src):
 
     pattern = re.compile(r'move (\d+) from (\d+) to (\d+)')
     moves = []
-    for instr in instructions.strip().split('\n'):
+    for instr in instructions.strip().splitlines():
         count, frm, to = map(int, pattern.match(instr).groups())
         moves.append((count, frm-1, to-1))
     return stacks, moves
