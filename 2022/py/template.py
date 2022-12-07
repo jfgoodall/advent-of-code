@@ -32,7 +32,7 @@ test data
 """
     test_data = StringIO(TEST_INPUT.strip())
     assert part1(parse_input(test_data)) == 0
-    # assert part2(parse_input(test_data)) == 0
+    assert part2(parse_input(test_data)) == 0
 
 def print_result(part_label, part_fn, *args):
     start = time.perf_counter()
@@ -42,6 +42,6 @@ def print_result(part_label, part_fn, *args):
 
 if __name__ == '__main__':
     run_tests()
-    # with open(__file__[:-3] + '-input.dat') as infile:
-    #     print_result('1', part1, parse_input(infile))  # -
-    #     print_result('2', part2, parse_input(infile))  # -
+    with open(__file__[:-3] + '-input.dat') as infile:
+        print_result('1', part1, parse_input(infile))  # -
+        print_result('2', part2, parse_input(infile))  # -
