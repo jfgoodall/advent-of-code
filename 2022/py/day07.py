@@ -4,60 +4,67 @@ from io import StringIO
 
 
 class Directory:
-    def __init__(self, name, parent=None):
-        self.name = name
-        self.parent = parent
-        self.files = {}
-        self.dirs = {}
-        self.size = 0
+    def __init__(self, parent=None):
+        self._parent: Final[Directory] = parent
+        self.subdirs: dict[str, Directory] = {}
+        self.files: list[int] = []  # just file sizes; names don't matter
 
-def print_dirs(subdir, indent=0):
-    print(f"{'  '*indent}- {subdir.name} (dir: {subdir.size})")
-    for name, sz in subdir.files.items():
-        print(f"{'  '*(indent+1)}- {name} ({sz})")
-    for d in subdir.dirs.values():
-        print_dirs(d, indent+1)
+    def mkdir(self, dirname):
+        if not dirname in self.subdirs:
+            self.subdirs[dirname] = Directory(parent=self)
+        return self.subdirs[dirname]
 
-def calc_dir_sizes(subdir, dir_sizes):
-    size = sum(subdir.files.values())
-    for d in subdir.dirs.values():
-        calc_dir_sizes(d, dir_sizes)
-        size += d.size
-    subdir.size = size
-    dir_sizes.append(size)
+    def chdir(self, dirname, root):
+        if dirname == '/':
+            return root
+        elif dirname == '..':
+            return self._parent
+        return self.mkdir(dirname)
+
+    def calc_dir_sizes(self) -> [int]:
+        """Return list of sizes of contained subdirectories. Last element
+        contains the total size of self.
+        """
+        self_size = sum(self.files)
+        dir_sizes = []
+        for subdir in self.subdirs.values():
+            dir_sizes += subdir.calc_dir_sizes()
+            self_size += dir_sizes[-1]
+        dir_sizes.append(self_size)
+        return dir_sizes
+
+def print_dirs(directory, dirname='/', indent=0):
+    print(f"{'  '*indent}- dir: {dirname}")
+    for sz in directory.files:
+        print(f"{'  '*(indent+1)}- file: {sz}")
+    for dirname, subdir in directory.subdirs.items():
+        print_dirs(subdir, dirname, indent+1)
 
 def part1(root):
-    dir_sizes = []
-    calc_dir_sizes(root, dir_sizes)
-    return sum(sz for sz in dir_sizes if sz <= 100000)
+    MAX_DIR_SIZE = 100000
+
+    dir_sizes = root.calc_dir_sizes()
+    return sum(sz for sz in dir_sizes if sz <= MAX_DIR_SIZE )
 
 def part2(root):
-    dir_sizes = []
-    calc_dir_sizes(root, dir_sizes)
-    needed_space = 30000000 - (70000000 - root.size)
-    return min(sz for sz in dir_sizes if sz >= needed_space)
+    TOTAL_DISK_SPACE = 70000000
+    REQUIRED_UNUSED_SPACE = 30000000
+
+    dir_sizes = root.calc_dir_sizes()
+    min_dir_size = REQUIRED_UNUSED_SPACE - (TOTAL_DISK_SPACE - dir_sizes[-1])
+    return min(sz for sz in dir_sizes if sz >= min_dir_size)
 
 def parse_input(data_src):
     data_src.seek(0)
-    root = Directory('/')
+    root = Directory()
     cwd = root
     for line in data_src:
         if line.startswith('$ cd'):
-            directory = line.split()[-1]
-            if directory == '/':
-                cwd = root
-            elif directory == '..':
-                cwd = cwd.parent
-            else:
-                if not directory in cwd.dirs:
-                    cwd.dirs[directory] = Directory(directory, cwd)
-                cwd = cwd.dirs[directory]
+            cwd = cwd.chdir(line.split()[-1], root)
         elif not line.startswith('$'):
-            a, b = line.split()
-            if a == 'dir':
-                cwd.dirs[b] = Directory(b, cwd)
-            else:
-                cwd.files[b] = int(a)
+            sz, _ = line.split()
+            if sz != 'dir':
+                cwd.files.append(int(sz))
     return root
 
 def run_tests():
