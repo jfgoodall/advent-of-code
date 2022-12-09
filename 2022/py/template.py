@@ -14,6 +14,10 @@ except ImportError:
     def tqdm(iterable=None, **kwargs):
         return iterable
 
+# sys.path.append(os.path.dirname(__file__))
+# from common_patterns import Point2D
+
+
 def part1(parsed):
     pass
 
@@ -26,13 +30,14 @@ def parse_input(data_src):
         pass
     return parsed
 
-def run_tests():
-    TEST_INPUT = """
-test data
-"""
-    test_data = StringIO(TEST_INPUT.strip())
-    assert part1(parse_input(test_data)) == 0
-    assert part2(parse_input(test_data)) == 0
+def main():
+    test_data, test_answers = get_test_data()
+    with open(__file__[:-3] + '-input.dat') as infile:
+        assert part1(parse_input(test_data)) == test_answers[0]
+        print_result('1', part1, parse_input(infile))  # -
+
+        assert part2(parse_input(test_data)) == test_answers[1]
+        print_result('2', part2, parse_input(infile))  # -
 
 def print_result(part_label, part_fn, *args):
     start = time.perf_counter()
@@ -40,8 +45,14 @@ def print_result(part_label, part_fn, *args):
     end = time.perf_counter()
     print(f"Part {part_label}: {result}  ({int((end-start)*1000)} ms)")
 
+def get_test_data():
+    """Keep test data out of the way at the bottom of this file."""
+    TEST_INPUT = """
+test data
+"""
+    TEST_RESULTS = (0, 0)
+
+    return StringIO(TEST_INPUT.strip()), TEST_RESULTS
+
 if __name__ == '__main__':
-    run_tests()
-    with open(__file__[:-3] + '-input.dat') as infile:
-        print_result('1', part1, parse_input(infile))  # -
-        print_result('2', part2, parse_input(infile))  # -
+    main()
