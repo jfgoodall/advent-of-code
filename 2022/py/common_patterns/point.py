@@ -1,0 +1,52 @@
+from __future__ import annotations
+
+from collections.abc import Iterable, Sequence
+from numbers import Number
+
+
+class Point2D(Sequence):
+    __slots__ = ('x', 'y')
+
+    def __init__(self, xy: Iterable[Number]=(0, 0)):
+        self.x: Number
+        self.y: Number
+        self.x, self.y = xy
+
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
+    def __repr__(self):
+        return (self.x, self.y)
+
+    def __iter__(self):
+        yield self.x
+        yield self.y
+
+    def __len__(self):
+        return 2
+
+    def __getitem__(self, index: int) -> Number:
+        return (self.x, self.y)[index]
+
+    def __eq__(self, other: Point2d) -> bool:
+        return self.as_tuple() == other.as_tuple()
+
+    def __add__(self, other: Point2d) -> Point2D:
+        return Point2D((self.x + other.x, self.y + other.y))
+
+    def __iadd__(self, other: Point2d) -> Point2D:
+        self.x += other.x
+        self.y += other.y
+        return self
+
+    def __sub__(self, other: Point2d) -> Point2D:
+        return Point2D((self.x - other.x, self.y - other.y))
+
+    def __isub__(self, other: Point2d) -> Point2D:
+        self.x -= other.x
+        self.y -= other.y
+        return self
+
+
+class Point3D:
+    __slots__ = ('x', 'y', 'z')
