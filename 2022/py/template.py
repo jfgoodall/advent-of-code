@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import functools
 import itertools
+import os
 import re
+import sys
 import time
 from collections import Counter, defaultdict
 from io import StringIO
@@ -47,10 +49,10 @@ def print_result(part_label, part_fn, *args):
 
 def get_test_data():
     """Keep test data out of the way at the bottom of this file."""
+    TEST_RESULTS = (0, 0)
     TEST_INPUT = """
 test data
 """
-    TEST_RESULTS = (0, 0)
 
     return StringIO(TEST_INPUT.strip()), TEST_RESULTS
 
