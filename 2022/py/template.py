@@ -37,11 +37,11 @@ def parse_input(data_src):
 def main():
     test_data, test_answers = get_test_data()
     with open(__file__[:-3] + '-input.dat') as infile:
-        assert part1(parse_input(test_data)) == test_answers[0]
-        print_result('1', part1, parse_input(infile))  # -
+        assert part1(*parse_input(test_data)) == test_answers[0]
+        print_result('1', part1, *parse_input(infile))  # -
 
-        assert part2(parse_input(test_data)) == test_answers[1]
-        print_result('2', part2, parse_input(infile))  # -
+        assert part2(*parse_input(test_data)) == test_answers[1]
+        print_result('2', part2, *parse_input(infile))  # -
 
 def print_result(part_label, part_fn, *args):
     start = time.perf_counter()
