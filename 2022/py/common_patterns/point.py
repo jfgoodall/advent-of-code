@@ -28,21 +28,21 @@ class Point2D(Sequence):
     def __getitem__(self, index: int) -> Number:
         return (self.x, self.y)[index]
 
-    def __eq__(self, other: Point2d) -> bool:
-        return self.as_tuple() == other.as_tuple()
+    def __eq__(self, other) -> bool:
+        return (self.x, self.y) == tuple(other)
 
-    def __add__(self, other: Point2d) -> Point2D:
-        return Point2D((self.x + other.x, self.y + other.y))
+    def __add__(self, other) -> Point2D:
+        return Point2D((self.x + other[0], self.y + other[1]))
 
-    def __iadd__(self, other: Point2d) -> Point2D:
-        self.x += other.x
-        self.y += other.y
+    def __iadd__(self, other) -> Point2D:
+        self.x += other[0]
+        self.y += other[1]
         return self
 
-    def __sub__(self, other: Point2d) -> Point2D:
-        return Point2D((self.x - other.x, self.y - other.y))
+    def __sub__(self, other) -> Point2D:
+        return Point2D((self.x - other[0], self.y - other[1]))
 
-    def __isub__(self, other: Point2d) -> Point2D:
+    def __isub__(self, other) -> Point2D:
         self.x -= other.x
         self.y -= other.y
         return self
