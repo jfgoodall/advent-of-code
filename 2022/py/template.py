@@ -7,7 +7,7 @@ import os
 import re
 import sys
 import time
-from collections import Counter, defaultdict
+from collections import Counter, defaultdict, namedtuple
 from io import StringIO
 
 import numpy as np
@@ -19,7 +19,8 @@ except ImportError:
         return iterable
 
 # sys.path.append(os.path.dirname(__file__))
-# from common_patterns import Point2D
+# from common_patterns.point import Point2D
+# from common_patterns.itertools import pairwise
 
 
 def part1(parsed):
@@ -32,7 +33,7 @@ def parse_input(data_src):
     data_src.seek(0)
     for line in data_src:
         pass
-    return parsed
+    return parsed  # note: return single item as [item] for *parse_input
 
 def main():
     test_data, test_answers = get_test_data()
@@ -55,7 +56,6 @@ def get_test_data():
     TEST_INPUT = """
 test data
 """
-
     return StringIO(TEST_INPUT.strip()), TEST_RESULTS
 
 if __name__ == '__main__':
