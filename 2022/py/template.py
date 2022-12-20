@@ -8,6 +8,7 @@ import re
 import sys
 import time
 from collections import Counter, defaultdict, namedtuple
+from dataclasses import dataclass
 from io import StringIO
 
 import numpy as np
