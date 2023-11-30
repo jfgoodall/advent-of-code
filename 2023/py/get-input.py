@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Usage: get-input.py <day> [<year> default: current year]
+Usage: get-input.py [<day> default: current day] [<year> default: current year]
 
 Requires a session.cookie file (json) with one entry that looks like:
     { "session": "<value" }
@@ -21,7 +21,9 @@ elif len(sys.argv) == 3:
     day = int(sys.argv[1])
     year = int(sys.argv[2])
 elif len(sys.argv) > 3:
-    raise TypeError("Usage: get-input.py <day> [<year> default: current year]")
+    raise TypeError(
+        "Usage: get-input.py [<day> default: current day] [<year> default: current year]"
+    )
 
 URL = f"https://adventofcode.com/{year}/day/{day}/input"
 FILE = f"day{day:02}-input.dat"
