@@ -10,6 +10,7 @@ import time
 from collections import Counter, defaultdict, namedtuple
 from dataclasses import dataclass
 from io import StringIO
+from pprint import pprint
 
 import numpy as np
 
@@ -32,9 +33,7 @@ def part2(parsed):
 
 def parse_input(data_src):
     data_src.seek(0)
-    for line in data_src:
-        pass
-    return parsed  # note: return single item as [item] for *parse_input
+    return [data_src.read().splitlines()]  # note: return single item as [item] for *parse_input
 
 def main():
     test_data, test_answers = get_test_data()
