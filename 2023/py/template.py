@@ -9,6 +9,7 @@ import sys
 import time
 from collections import Counter, defaultdict, namedtuple
 from dataclasses import dataclass
+from functools import lru_cache
 from io import StringIO
 from pprint import pprint
 
