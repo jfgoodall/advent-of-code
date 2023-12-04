@@ -3,7 +3,7 @@
 Usage: get-input.py [<day> default: current day] [<year> default: current year]
 
 Requires a session.cookie file (json) with one entry that looks like:
-    { "session": "<value" }
+    { "session": "<value>" }
 """
 import datetime
 import json
