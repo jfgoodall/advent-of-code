@@ -1,9 +1,29 @@
 #!/usr/bin/env python3
+import math
 import time
 from io import StringIO
 
 
+def solve_quadratic(time, dist):
+    # -t^2 + time*t - dist > 0
+    a = -1
+    b = time
+    c = -dist
+    discr = b*b - 4*a*c
+    assert discr > 0
+    x = (-b + discr**0.5) / (2*a)
+    y = (-b - discr**0.5) / (2*a)
+
+    # account for the inequality
+    x = math.nextafter(x, x+1)
+    y = math.nextafter(y, y-1)
+
+    return math.floor(y) - math.ceil(x) + 1
+
 def part1(pairs, *_):
+    return math.prod(solve_quadratic(t, d) for t, d in pairs)
+
+def part1_incremental(pairs, *_):
     total = 1
     for time, dist in pairs:
         ways = 0
@@ -14,6 +34,9 @@ def part1(pairs, *_):
     return total
 
 def part2(_, time, dist):
+    return solve_quadratic(time, dist)
+
+def part2_binary_search(_, time, dist):
     # binary search approach assumes time/2 is a winning time
     low, high = 0, time
     while high-low > 1:
