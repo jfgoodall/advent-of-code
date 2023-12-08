@@ -9,6 +9,7 @@ import sys
 import time
 from collections import Counter, defaultdict, namedtuple
 from dataclasses import dataclass
+from enum import Enum, IntEnum
 from functools import lru_cache
 from io import StringIO
 from pprint import pprint
@@ -34,6 +35,9 @@ def part2(parsed):
 
 def parse_input(data_src):
     data_src.seek(0)
+    head, *body = data_src.read().splitlines()
+    for line in data_src.read().splitlines():
+        pass
     return [data_src.read().splitlines()]  # note: return single item as [item] for *parse_input
 
 def main():
