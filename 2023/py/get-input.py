@@ -8,10 +8,12 @@ Requires a session.cookie file (json) with one entry that looks like:
 import datetime
 import json
 import sys
+import zoneinfo
 
 import requests
 
-today = datetime.date.today()
+# puzzles are released at midnight EST
+today = datetime.datetime.now(zoneinfo.ZoneInfo("America/New_York"))
 day = today.day
 year = today.year
 
