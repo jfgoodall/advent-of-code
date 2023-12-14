@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import multiprocessing
 import time
 from io import StringIO
 
@@ -9,73 +10,68 @@ def calc_load(platform):
     return sum(platform.shape[0]-row
                for (row, _), val in np.ndenumerate(platform) if val == 'O')
 
-def tilt_north(platform):
-    for col in range(platform.shape[0]):
-        while True:
-            for row in range(1, platform.shape[1]):
-                if platform[row,col] == 'O' and platform[row-1,col] == '.':
-                    platform[row,col] = '.'
-                    platform[row-1,col] = 'O'
-                    break
+def tilt_lane(lane, direction):
+    dest_bound = lane.shape[0] if direction == -1 else -1
+    dest = 0 if direction == -1 else lane.shape[0]-1
+
+    while dest != dest_bound and lane[dest] != '.':
+        dest -= direction
+    src = dest - direction
+
+    while 0 <= src < lane.shape[0]:
+        if lane[src] in 'O#':
+            if lane[src] == 'O':
+                lane[src] = '.'
+                lane[dest] = 'O'
             else:
-                break
+                dest = src
+            dest -= direction
+
+            while dest != dest_bound and lane[dest] != '.':
+                dest -= direction
+            src = dest
+        src -= direction
+    return lane
+
+def tilt_north(platform):
+    tilted = pool.starmap(tilt_lane, ((col, -1) for col in platform.T))
+    return np.array(tilted).T
 
 def tilt_west(platform):
-    for row in range(platform.shape[1]):
-        while True:
-            for col in range(1, platform.shape[0]):
-                if platform[row,col] == 'O' and platform[row,col-1] == '.':
-                    platform[row,col] = '.'
-                    platform[row,col-1] = 'O'
-                    break
-            else:
-                break
+    tilted = pool.starmap(tilt_lane, ((row, -1) for row in platform))
+    return np.array(tilted)
 
 def tilt_south(platform):
-    for col in range(platform.shape[0]):
-        while True:
-            for row in range(1, platform.shape[1]):
-                if platform[row,col] == '.' and platform[row-1,col] == 'O':
-                    platform[row,col] = 'O'
-                    platform[row-1,col] = '.'
-                    break
-            else:
-                break
+    tilted = pool.starmap(tilt_lane, ((col, +1) for col in platform.T))
+    return np.array(tilted).T
 
 def tilt_east(platform):
-    for row in range(platform.shape[1]):
-        while True:
-            for col in range(1, platform.shape[0]):
-                if platform[row,col] == '.' and platform[row,col-1] == 'O':
-                    platform[row,col] = 'O'
-                    platform[row,col-1] = '.'
-                    break
-            else:
-                break
+    tilted = pool.starmap(tilt_lane, ((row, +1) for row in platform))
+    return np.array(tilted)
 
 def part1(platform):
-    tilt_north(platform)
+    platform = tilt_north(platform)
     return calc_load(platform)
 
 def part2(platform):
     seen = {}
-    plats = []
+    plats = [platform]
     for cycle in range(1, 1_000_000_000):
-        tilt_north(platform)
-        tilt_west(platform)
-        tilt_south(platform)
-        tilt_east(platform)
+        platform = tilt_north(platform)
+        platform = tilt_west(platform)
+        platform = tilt_south(platform)
+        platform = tilt_east(platform)
 
-        plat = tuple(map(tuple, platform))
-        if plat in seen:
-            offset = seen[plat] - 1
-            period = cycle - seen[plat]
+        plat_hash = platform.tobytes()
+        if plat_hash in seen:
+            offset = seen[plat_hash] - 1
+            period = cycle - seen[plat_hash]
             break
-        seen[plat] = cycle
-        plats.append(plat)
+        seen[plat_hash] = cycle
+        plats.append(platform)
 
-    p = (1_000_000_000-offset) % period + offset
-    return calc_load(np.array(plats[p-1]))
+    equivalent = plats[(1_000_000_000-offset) % period + offset]
+    return calc_load(equivalent)
 
 def parse_input(data_src):
     data_src.seek(0)
@@ -115,5 +111,6 @@ O.#..O.#.#
 """
     return StringIO(TEST_INPUT.strip()), TEST_RESULTS
 
+pool = multiprocessing.Pool()
 if __name__ == '__main__':
     main()
