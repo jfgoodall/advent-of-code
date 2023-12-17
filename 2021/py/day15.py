@@ -47,72 +47,58 @@ def bigify_grid(grid):
 
 def dijkstra(graph, target):
     class Node:
-        __slots__ = 'coord', 'dist', 'removed'
+        __slots__ = 'coord', 'dist'
         def __init__(self, coord, dist):
             self.coord = coord
             self.dist = dist
-            self.removed = False
         def __lt__(self, other):
             return self.dist < other.dist
 
     heap = []
     coord_map = {}
 
-    def add_node(coord, dist):
-        node = Node(coord, dist)
-        coord_map[coord] = node
-        heapq.heappush(heap, node)
-
-    add_node((0, 0), 0)
+    coord_map[(0, 0)] = Node((0, 0), 0)
+    heapq.heappush(heap, coord_map[(0, 0)])
     while heap:
         current = heapq.heappop(heap)
-        if current.removed:
-            continue
         if current.coord == target:
             break
         for neighbor, dist in graph[current.coord]:
             if neighbor in coord_map:
                 if current.dist+dist < coord_map[neighbor].dist:
-                    coord_map[neighbor].removed = True
-                    add_node(neighbor, current.dist+dist)
+                    coord_map[neighbor] = Node(neighbor, current.dist+dist)
             else:
-                add_node(neighbor, current.dist+dist)
+                coord_map[neighbor] = Node(neighbor, current.dist+dist)
+                heapq.heappush(heap, coord_map[neighbor])
 
     return coord_map[target].dist
 
 def a_star(graph, target):
     class Node:
-        __slots__ = 'coord', 'dist', 'fscore', 'removed'
+        __slots__ = 'coord', 'dist', 'fscore'
         def __init__(self, coord, dist):
             self.coord = coord
             self.dist = dist
             self.fscore = dist + target[0]-coord[0] + target[1]-coord[1]
-            self.removed = False
         def __lt__(self, other):
             return self.fscore < other.fscore
 
     heap = []
     coord_map = {}
 
-    def add_node(coord, dist):
-        node = Node(coord, dist)
-        coord_map[coord] = node
-        heapq.heappush(heap, node)
-
-    add_node((0, 0), 0)
+    coord_map[(0, 0)] = Node((0, 0), 0)
+    heapq.heappush(heap, coord_map[(0, 0)])
     while heap:
         current = heapq.heappop(heap)
-        if current.removed:
-            continue
         if current.coord == target:
             break
         for neighbor, dist in graph[current.coord]:
             if neighbor in coord_map:
                 if current.dist+dist < coord_map[neighbor].dist:
-                    coord_map[neighbor].removed = True
-                    add_node(neighbor, current.dist+dist)
+                    coord_map[neighbor] = Node(neighbor, current.dist+dist)
             else:
-                add_node(neighbor, current.dist+dist)
+                coord_map[neighbor] = Node(neighbor, current.dist+dist)
+                heapq.heappush(heap, coord_map[neighbor])
 
     return coord_map[target].dist
 
