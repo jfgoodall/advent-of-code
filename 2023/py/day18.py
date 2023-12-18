@@ -1,111 +1,61 @@
 #!/usr/bin/env python3
-import itertools
+import functools
 import time
 from io import StringIO
-from pprint import pprint
 
-DELTA = { 'R': (1, 0), 'L': (-1, 0), 'U': (0, 1), 'D': (0, -1) }
+import numpy as np
 
-def part1_(plan):
-    grid = set()
-    pos = (0, 0)
+
+def calculate_area_rectangles(plan):
+    """add rectangular areas when moving right, subtract them when moving left;
+       this only works because polygon is defined rectilinearlly; use shoelace
+       method (below) for general simple polygons"""
+    area = 0
+    perimeter = 0
+    x, y = 0, 0
     for direction, length, _ in plan:
-        dxy = DELTA[direction]
-        for _ in range(length):
-            pos = (pos[0]+dxy[0], pos[1]+dxy[1])
-            grid.add(pos)
+        perimeter += length
+        match direction:
+            case 'R':
+                x += length
+                area += length * y
+            case 'L':
+                x -= length
+                area -= length * y
+            case 'U':
+                y += length
+            case 'D':
+                y -= length
 
-    min_x = min(grid)[0]
-    max_x = max(grid)[0]
-    min_y = min(grid, key=lambda x: x[1])[1]
-    max_y = max(grid, key=lambda x: x[1])[1]
-    fill = []
-    for x in range(min_x, max_x+1):
-        if (x, min_y) not in grid:
-            fill.append((x, min_y))
-    for x in range(min_x, max_x+1):
-        if (x, max_y) not in grid:
-            fill.append((x, max_y))
-    for y in range(min_y+1, max_y):
-        if (min_x, y) not in grid:
-            fill.append((min_x, y))
-    for y in range(min_y+1, max_y):
-        if (max_x, y) not in grid:
-            fill.append((max_x, y))
+    # account for the boundary line having width > 0
+    return abs(area) + perimeter//2 + 1
 
-    for y in range(max_y, min_y-1, -1):
-        for x in range(min_x, max_x+1):
-            if (x,y) in grid:
-                print('#', end='')
-            else:
-                print('.', end='')
-        print()
-    print()
-
-    # flood fill the outside
-    outside = set()
-    progress = 0
-    while fill:
-        progress += 1
-        if progress % 100000 == 0:
-            print(len(fill))
-        pos = fill.pop()
-        if not (min_x <= pos[0] <= max_x and min_y <= pos[1] <= max_y):
-            continue
-
-        if pos not in grid:
-            outside.add(pos)
-            grid.add(pos)
-            fill.append((pos[0]+1, pos[1]))
-            fill.append((pos[0]-1, pos[1]))
-            fill.append((pos[0], pos[1]+1))
-            fill.append((pos[0], pos[1]-1))
-
-    return (max_x-min_x+1) * (max_y-min_y+1) - len(outside)
-
-def part1(plan):
-    vert = set()
-    horz = set()
-    lines = set()
-
-    start = (0, 0)
+def calculate_area_shoelace(plan):
+    """use shoelace method to calculate polygon area:
+       https://en.wikipedia.org/wiki/Shoelace_formula"""
+    DIRECTION_MAP = {'R': np.array((1,0)), 'L': np.array((-1,0)),
+                     'U': np.array((0,1)), 'D': np.array((0,-1))}
+    areax2 = 0
+    perimeter = 0
+    a = np.array((0, 0))
     for direction, length, _ in plan:
-        dxy = DELTA[direction]
-        end = (start[0]+(dxy[0]*length), start[1]+(dxy[1]*length))
-        if direction in 'UD':
-            vert.add(end[0])
-        else:
-            horz.add(end[1])
-        lines.add((start, end))
-        start = end
+        perimeter += length
+        b = a + DIRECTION_MAP[direction]*length
+        areax2 += a[0]*b[1] - b[0]*a[1]
+        a = b
 
-    pprint(sorted(vert))
-    pprint(sorted(horz))
-    pprint(lines)
+    # account for the boundary line having width > 0
+    return abs(areax2//2) + perimeter//2 + 1
 
-    compact = []
-    for y1, y2 in itertools.pairwise(reversed(sorted(horz))):
-        row = []
-        for x1, x2 in itertools.pairwise(sorted(vert)):
-            row.append(((x1, y1), abs(x2-x1), abs(y2-y1)))
-        compact.append(row)
-    pprint(compact)
+def part1(method, plan):
+    return method(plan)
 
-    total = 0
-    for row in compact:
-        for col in row:
-            total += col[1] * col[2]
-    print(total)
-
-def translate_plan(plan):
+def part2(method, plan):
     DIR_MAP = {'0': 'R', '1': 'D', '2': 'L', '3': 'U'}
-    new_plan = []
-    for _, _, color in plan:
-        new_plan.append((DIR_MAP[color[-2]], int(color[2:-2], base=16), color))
-    return new_plan
 
-def part2(plan):
-    plan = translate_plan(plan)
+    new_plan = [(DIR_MAP[color[-2]], int(color[2:-2], base=16), color)
+                for *_, color in plan]
+    return method(new_plan)
 
 def parse_input(data_src):
     data_src.seek(0)
@@ -118,11 +68,19 @@ def parse_input(data_src):
 def main():
     test_data, test_answers = get_test_data()
     with open(__file__[:-3] + '-input.dat') as infile:
-        assert part1(*parse_input(test_data)) == test_answers[0]
-        # print_result('1', part1, *parse_input(infile))  # 48400
+        p1_rect = functools.partial(part1, calculate_area_rectangles)
+        p1_shoe = functools.partial(part1, calculate_area_shoelace)
+        assert p1_rect(*parse_input(test_data)) == test_answers[0]
+        assert p1_shoe(*parse_input(test_data)) == test_answers[0]
+        print_result('1 Rectangles', p1_rect, *parse_input(infile))  # 48400
+        print_result('1 Shoelace  ', p1_shoe, *parse_input(infile))  # 48400
 
-        # assert part2(*parse_input(test_data)) == test_answers[1]
-        # print_result('2', part2, *parse_input(infile))  #
+        p2_rect = functools.partial(part2, calculate_area_rectangles)
+        p2_shoe = functools.partial(part2, calculate_area_shoelace)
+        assert p2_rect(*parse_input(test_data)) == test_answers[1]
+        assert p2_shoe(*parse_input(test_data)) == test_answers[1]
+        print_result('2 Rectangles', p2_rect, *parse_input(infile))  # 72811019847283
+        print_result('2 Shoelace  ', p2_shoe, *parse_input(infile))  # 72811019847283
 
 def print_result(part_label, part_fn, *args):
     start = time.perf_counter()
