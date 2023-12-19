@@ -45,6 +45,7 @@ def calculate_area_shoelace(plan):
         a = b
 
     # account for the boundary line having width > 0
+    return (abs(areax2) + perimeter) // 2 + 1
     return abs(areax2//2) + perimeter//2 + 1
 
 def part1(method, plan):
