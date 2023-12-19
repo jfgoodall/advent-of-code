@@ -1,20 +1,14 @@
 #!/usr/bin/env python3
-from __future__ import annotations
-
 import math
 import re
 import time
-from copy import deepcopy
-from dataclasses import dataclass, field
+from collections import namedtuple
 from io import StringIO
 
+Rule = namedtuple('Rule', ['category', 'comparison', 'value', 'workflow'])
 
-@dataclass
-class Rule:
-    category: str
-    comparison: str
-    value: int
-    workflow: str
+EMPTY_RANGE = {ch:(0,-1) for ch in 'xmas'}
+WHOLE_RANGE = {ch:(1,4000) for ch in 'xmas'}
 
 def part1(workflows, parts):
     total = 0
@@ -29,83 +23,52 @@ def part1(workflows, parts):
             for rule in workflows[wf]:
                 if (rule.comparison == '<' and part[rule.category] < rule.value or
                     rule.comparison == '>' and part[rule.category] > rule.value):
-                    wf = rule.workflow
                     break
-            else:
-                wf = rule.workflow
+            wf = rule.workflow
     return total
+
+def apply_rule(rule, ranges) -> tuple[map, map]:
+    passed = ranges.copy()
+    rejected = ranges.copy()
+
+    if not rule.category:
+        if rule.workflow != 'R':
+            rejected = EMPTY_RANGE
+        else:
+            passed = EMPTY_RANGE
+    else:
+        lower, upper = ranges[rule.category]
+        if (rule.comparison == '<' and upper < rule.value or
+            rule.comparison == '>' and lower > rule.value):
+            rejected = EMPTY_RANGE
+        elif (rule.comparison == '<' and lower >= rule.value or
+              rule.comparison == '>' and upper <= rule.value):
+            passed = EMPTY_RANGE
+        else:
+            if rule.comparison == '<':
+                passed[rule.category] = (lower, rule.value-1)
+                rejected[rule.category] = (rule.value, upper)
+            else:
+                passed[rule.category] = (rule.value+1, upper)
+                rejected[rule.category] = (lower, rule.value)
+
+    return passed, rejected
+
+def count_accepted(workflows, workflow, ranges):
+    if workflow == 'A':
+        return math.prod(upper-lower+1 for lower, upper in ranges.values())
+    elif workflow == 'R':
+        return 0
+
+    count = 0
+    for rule in workflows[workflow]:
+        passed, rejected = apply_rule(rule, ranges)
+        count += count_accepted(workflows, rule.workflow, passed)
+        ranges = rejected
+    return count
 
 def part2(workflows, _):
-    """tree time"""
-    @dataclass
-    class Node:
-        workflow: str
-        ranges: map[str:tuple[int,int]]
-        parent: Node=None
-        children: list[Node]=field(default_factory=lambda: [])
-
-    seen = set()
-    def grow_tree(node):
-        print(node.workflow, node.parent.workflow if node.parent else '', node.ranges)
-        if node.workflow in 'AR':
-            return
-
-        assert node.workflow not in seen
-        seen.add(node.workflow)
-
-        rolling_ranges = deepcopy(node.ranges)
-        for rule in workflows[node.workflow]:
-            ranges = deepcopy(rolling_ranges)
-
-            if rule.category:
-                lower, upper = ranges[rule.category]
-                if rule.comparison == '>' and rule.value > ranges[rule.category][0]:
-                    ranges[rule.category] = (rule.value+1, upper)
-                elif rule.comparison == '<' and rule.value < ranges[rule.category][1]:
-                    ranges[rule.category] = (lower, rule.value-1)
-
-                # invert the rolling ranges for the next loop iteration to
-                # reflect that the previous rule didn't apply
-                lower, upper = ranges[rule.category]
-                if rule.comparison == '>':
-                    rolling_ranges[rule.category] = (lower, min(rule.value, upper))
-                elif rule.comparison == '<':
-                    rolling_ranges[rule.category] = (max(rule.value, lower), upper)
-
-            child = Node(rule.workflow, ranges, node)
-            node.children.append(child)
-            grow_tree(child)
-
-    accepted = []
-    def count_accepted(node):
-        if node.workflow == 'A':
-            accepted.append(node)
-            return math.prod(b-a for a, b in node.ranges.values())
-        else:
-            return sum(count_accepted(child) for child in node.children)
-
-
-    root = Node('in', {'x':(1,4000), 'm':(1,4000), 'a':(1,4000), 's':(1,4000)})
-    grow_tree(root)
-    total = count_accepted(root)
-
-    print()
-    for node in accepted:
-        print(node.parent.workflow, node.ranges)
-
-    # we're overcounting so we probably need to merge overlapping ranges somehow
-    # for a, b in itertools.combinations(accepted, 2):
-    #     for key in 'xmas':
-    #         if b.ranges[key][0] > a.ranges[key][1] or a.ranges[key][0] > b.ranges[key][1]:
-    #             break
-    #     else:
-    #         # :(
-    #         print(a.ranges)
-    #         print(b.ranges)
-    #         print()
-
-    print(total)
-    return total
+    return count_accepted(workflows, 'in', WHOLE_RANGE)
 
 def parse_input(data_src):
     data_src.seek(0)
@@ -141,7 +104,7 @@ def main():
         print_result('1', part1, *parse_input(infile))  # 397643
 
         assert part2(*parse_input(test_data)) == test_answers[1]
-        print_result('2', part2, *parse_input(infile))  # -
+        print_result('2', part2, *parse_input(infile))  # 132392981697081
 
 def print_result(part_label, part_fn, *args):
     start = time.perf_counter()
