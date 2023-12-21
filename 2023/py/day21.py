@@ -5,6 +5,7 @@ from collections import defaultdict
 from io import StringIO
 
 import numpy as np
+import tqdm
 
 
 def grid_to_graph(grid):
@@ -39,60 +40,90 @@ class Node:
     def __repr__(self):
         return f"{self.coord=} {self.dist=}"
 
-def dijkstra(graph, start):
+def dijkstra(graph, start, show_progress=False):
     heap = []
     coord_map = {}
 
-    coord_map[start] = Node(start, 0)
-    heapq.heappush(heap, coord_map[start])
-    while heap:
-        current = heapq.heappop(heap)
-        for neighbor, dist in graph[current.coord]:
-            if neighbor in coord_map:
-                if current.dist+dist < coord_map[neighbor].dist:
+    s = set(x[0] for m in graph.values() for x in m)
+    with tqdm.tqdm(total=len(s)-1, disable=not show_progress) as pbar:
+        coord_map[start] = Node(start, 0)
+        heapq.heappush(heap, coord_map[start])
+        while heap:
+            current = heapq.heappop(heap)
+            for neighbor, dist in graph[current.coord]:
+                if neighbor in coord_map:
+                    if current.dist+dist < coord_map[neighbor].dist:
+                        coord_map[neighbor] = Node(neighbor, current.dist+dist)
+                else:
                     coord_map[neighbor] = Node(neighbor, current.dist+dist)
-            else:
-                coord_map[neighbor] = Node(neighbor, current.dist+dist)
-                heapq.heappush(heap, coord_map[neighbor])
+                    heapq.heappush(heap, coord_map[neighbor])
+                    pbar.update()
+
     return coord_map
 
 def part1(garden, start, steps=64):
     graph = grid_to_graph(garden)
     coord_map = dijkstra(graph, start)
 
+    PARITY = steps % 2
     count = 0
     for node in coord_map.values():
-        if node.dist <= steps and node.dist%2 == steps%2:
+        if node.dist <= steps and node.dist%2 == PARITY:
             count += 1
-            garden[*node.coord] = 'O'
     return count
 
-def part2(garden, start, steps=26501365):
+def part2(garden, start):
+    """this only works because there are no rocks through the center of the __real__ data
+       (the test data is garbage here) and because:
+           (26501365-garden.shape//2)%garden.shape == 0
+       puzzles where the solution can only be found by analyzing the specific input data
+       rather than the puzzle description and example data kinda suck"""
+    # show partitioning by parity
+    # start_parity = (start[0]+start[1]) % 2
+    # plots = 0
+    # reachable = 0
+    # for idx, val in np.ndenumerate(garden):
+    #     if val == '.':
+    #         plots += 1
+    #         if (idx[0]+idx[1])%2 == start_parity:
+    #             reachable += 1
+    # parity0 = reachable
+    # parity1 = plots - reachable
+    # print(f'{parity0=} {parity1=}')
+
+    # tile the garden into a 5x5 configuration to make sure we have both "parity" cases
+    # covered in all directions from the center
+    spread = 2
+    tile_size = garden.shape[0]
+    start = (start[0]+tile_size*spread, start[1]+tile_size*spread)
+    garden = np.tile(garden, (spread*2+1, spread*2+1))
+
+    # part 1 on the tiled garden
     graph = grid_to_graph(garden)
-    coord_map = dijkstra(graph, start)
+    coord_map = dijkstra(graph, start, show_progress=True)
 
-    start_parity = (start[0]+start[1]) % 2
-    plots = 0
-    reachable = 0
-    for idx, val in np.ndenumerate(garden):
-        if val == '.':
-            plots += 1
-            if (idx[0]+idx[1])%2 == start_parity:
-                reachable += 1
-    print(f'{plots=} {reachable=} other={plots-reachable}')
+    # find number of plots reachable in step counts that reach the end of a tiling period
+    targets = np.array([tile_size//2+tile_size*x for x in range(spread+1)])
+    plots = np.zeros(len(targets))
+    for node in tqdm.tqdm(coord_map.values()):
+        for idx, target in enumerate(targets):
+            if node.dist <= target and node.dist%2 == target%2:
+                plots[idx] += 1
 
-    for node in coord_map.values():
-        garden[*node.coord] = f'{node.dist:02}'
-    for idx, val in np.ndenumerate(garden):
-        if len(val) == 1:
-            garden[idx] = ' '+val
-    print(garden)
+    # works but result is too big by 0.6 due to precision
+    # coeffs = np.polynomial.polynomial.polyfit(targets, plots, deg=2)
+    # poly = np.polynomial.Polynomial(coeffs)
+    # return poly(26501365)
 
+    # better interpolation compatible with float128
+    import scipy.interpolate
+    poly = scipy.interpolate.lagrange(targets.astype(np.longdouble), plots.astype(np.longdouble))
+    return poly(26501365)
 
 def parse_input(data_src):
     data_src.seek(0)
     lines = data_src.read().splitlines()
-    garden = np.array([list(l) for l in lines], dtype=np.dtype('U4'))
+    garden = np.array([list(l) for l in lines])
     for (row, col), val in np.ndenumerate(garden):
         if val == 'S':
             garden[row, col] = '.'
@@ -105,8 +136,8 @@ def main():
         assert part1(*parse_input(test_data), steps=6) == test_answers[0]
         print_result('1', part1, *parse_input(infile))  # 3729
 
-        assert part2(*parse_input(test_data), steps=50) == test_answers[1]
-        print_result('2', part2, *parse_input(infile))  # -
+        # assert part2(*parse_input(test_data), steps=50) == test_answers[1]
+        print_result('2', part2, *parse_input(infile))  # 621289922886149
 
 def print_result(part_label, part_fn, *args):
     start = time.perf_counter()
