@@ -22,10 +22,6 @@ except ImportError:
     def tqdm(iterable=None, **kwargs):
         return iterable
 
-# sys.path.append(os.path.dirname(__file__))
-# from common_patterns.point import Point2D
-# from common_patterns.itertools import pairwise
-
 
 def part1(parsed):
     pass
