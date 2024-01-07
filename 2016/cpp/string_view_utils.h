@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string_view>
 
+namespace utils {
 namespace impl {
 
 // replicate std::stol and friends for std::string_view
@@ -46,5 +47,7 @@ long svtoul(const std::string_view& sv, std::size_t* pos = nullptr, int base = 1
 long long svtoull(const std::string_view& sv, std::size_t* pos = nullptr, int base = 10) {
     return impl::svto_integer<unsigned long long>(sv, pos, base);
 }
+
+}  // namespace utils
 
 #endif  // STRING_VIEW_UTILS_H_

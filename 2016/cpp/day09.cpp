@@ -13,9 +13,9 @@ std::size_t decompressed_size(const std::string_view& sv, bool recurse = false) 
     while (pos < sv.size()) {
         if (sv[pos] == '(') {
             ++pos;
-            auto m = svtoul(sv.substr(pos), &next);
+            auto m = utils::svtoul(sv.substr(pos), &next);
             pos += next + 1;
-            auto n = svtoul(sv.substr(pos), &next);
+            auto n = utils::svtoul(sv.substr(pos), &next);
             pos += next + 1;
 
             auto segment_len = recurse ? decompressed_size(sv.substr(pos, m), true) : m;
