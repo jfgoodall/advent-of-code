@@ -13,5 +13,5 @@ repos:
     rev: 5.13.0
     hooks:
     -   id: isort
-        files: "2024/py/\\.(py)$"
+        files: "2024/py/*\\.(py)$"
         args: [--settings-path=2024/py/pyproject.toml]
