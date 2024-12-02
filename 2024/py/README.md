@@ -1,5 +1,5 @@
-# Advent of Code 2023 Solutions
-https://adventofcode.com/2023
+# Advent of Code 2024 Solutions
+https://adventofcode.com/2024
 
 ## Dependencies
 ```bash
@@ -12,7 +12,7 @@ $ pre-commit install
 $ pre-commit run --all-files
 ```
 ## Fetch Puzzle Input
-* Log into https://adventofcode.com in a broswer and look up the value string of the session cookie
+* Log into https://adventofcode.com in a browser and look up the value string of the session cookie
 * Create a file `session.cookie` in the repo root director with the following contents:
 ```json
 { "session": "<value>" }
