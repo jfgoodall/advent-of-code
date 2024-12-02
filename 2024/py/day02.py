@@ -1,41 +1,42 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import functools
 import itertools
 import math
-import os
-import re
-import sys
 import time
-from collections import Counter, defaultdict, namedtuple
-from dataclasses import dataclass
-from enum import Enum, IntEnum
-from functools import lru_cache
 from io import StringIO
-from pprint import pprint
-
-import numpy as np
-
-try:
-    from tqdm import tqdm
-except ImportError:
-    def tqdm(iterable=None, **kwargs):
-        return iterable
 
 
-def part1(parsed):
-    pass
+def is_safe(diffs):
+    sign = math.copysign(1, diffs[0])
+    for d in diffs:
+        if math.copysign(1, d) != sign or abs(d) < 1 or abs(d) > 3:
+            return False
+    return True
 
-def part2(parsed):
-    pass
+def part1(reports):
+    count = 0
+    for report in reports:
+        diffs = [a-b for a, b in itertools.pairwise(report)]
+        count += int(is_safe(diffs))
+    return count
+
+def part2(reports):
+    count = 0
+    for report in reports:
+        for i in range(len(reports)+1):
+            diffs = [a-b for a, b in itertools.pairwise(report[:i]+report[i+1:])]
+            if is_safe(diffs):
+                count += 1
+                break
+    return count
 
 def parse_input(data_src):
     data_src.seek(0)
-    head, *body = data_src.read().splitlines()
+    reports = []
     for line in data_src.read().splitlines():
-        pass
-    return [data_src.read().splitlines()]  # note: return single item as [item] for *parse_input
+        reports.append(list(map(int, line.split())))
+    return [reports]  # note: return single item as [item] for *parse_input
 
 def main():
     test_data, test_answers = get_test_data()
@@ -54,9 +55,14 @@ def print_result(part_label, part_fn, *args):
 
 def get_test_data():
     """Keep test data out of the way at the bottom of this file."""
-    TEST_RESULTS = (0, 0)
+    TEST_RESULTS = (2, 4)
     TEST_INPUT = """
-test data
+7 6 4 2 1
+1 2 7 8 9
+9 7 6 2 1
+1 3 2 4 5
+8 6 4 4 1
+1 3 6 7 9
 """
     return StringIO(TEST_INPUT.strip()), TEST_RESULTS
 
