@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import time
+import typing
 from collections import Counter, defaultdict, namedtuple
 from dataclasses import dataclass
 from enum import Enum, IntEnum
@@ -30,7 +31,7 @@ def part1(parsed):
 def part2(parsed):
     pass
 
-def parse_input(data_src):
+def parse_input(data_src: typing.TextIO) -> list[typing.Any]:
     data_src.seek(0)
     head, *body = data_src.read().splitlines()
     for line in data_src.read().splitlines():
@@ -38,27 +39,34 @@ def parse_input(data_src):
     return [data_src.read().splitlines()]  # note: return single item as [item] for *parse_input
 
 def main():
-    test_data, test_answers = get_test_data()
+    (test1_data, test1_answer), (test2_data, test2_answer) = get_test_data()
     with open(__file__[:-3] + '-input.dat') as infile:
-        assert part1(*parse_input(test_data)) == test_answers[0]
-        print_result('1', part1, *parse_input(infile))  # -
+        assert part1(*parse_input(test1_data)) == test1_answer
+        solve_part('1', part1, *parse_input(infile))  # -
 
-        assert part2(*parse_input(test_data)) == test_answers[1]
-        print_result('2', part2, *parse_input(infile))  # -
+        assert part2(*parse_input(test2_data)) == test2_answer
+        solve_part('2', part2, *parse_input(infile))  # -
 
-def print_result(part_label, part_fn, *args):
+def solve_part(part_label: str, part_fn: typing.Callable, *args):
     start = time.perf_counter()
     result = part_fn(*args)
     end = time.perf_counter()
     print(f"Part {part_label}: {result}  ({int((end-start)*1000)} ms)")
 
-def get_test_data():
+def get_test_data() -> tuple[(tuple[str, str|float],) * 2]:
     """Keep test data out of the way at the bottom of this file."""
-    TEST_RESULTS = (0, 0)
-    TEST_INPUT = """
-test data
+    TEST_INPUT1 = """
+data
 """
-    return StringIO(TEST_INPUT.strip()), TEST_RESULTS
+    TEST_ANSWER1 = None
+
+    TEST_INPUT2 = TEST_INPUT1
+    TEST_ANSWER2 = None
+
+    return (
+        (StringIO(TEST_INPUT1.strip()), TEST_ANSWER1),
+        (StringIO(TEST_INPUT2.strip()), TEST_ANSWER2)
+    )
 
 if __name__ == '__main__':
     main()
