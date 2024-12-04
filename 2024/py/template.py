@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import annotations
-
 import functools
 import itertools
 import math
@@ -53,15 +51,15 @@ def solve_part(part_label: str, part_fn: typing.Callable, *args):
     end = time.perf_counter()
     print(f"Part {part_label}: {result}  ({int((end-start)*1000)} ms)")
 
-def get_test_data() -> tuple[(tuple[str, str|float],) * 2]:
+def get_test_data() -> tuple[(str, str|float) * 2]:
     """Keep test data out of the way at the bottom of this file."""
     TEST_INPUT1 = """
 data
 """
-    TEST_ANSWER1 = None
+    TEST_ANSWER1 = float('nan')
 
     TEST_INPUT2 = TEST_INPUT1
-    TEST_ANSWER2 = None
+    TEST_ANSWER2 = float('nan')
 
     return (
         (StringIO(TEST_INPUT1.strip()), TEST_ANSWER1),
