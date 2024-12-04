@@ -8,26 +8,29 @@ def part1(lines):
     ROWS = len(lines)
     COLS = len(lines[0])
     VECTORS = [
-        (0, 1), (0, -1),   # horizontal
-        (1, 0), (-1, 0),   # vertical
-        (1, 1), (-1, -1),  # diagonal 1
-        (1, -1), (-1, 1)   # diagonal 2
+        (0, 1), (0, -1),   # horizontal -
+        (1, 0), (-1, 0),   # vertical |
+        (1, 1), (-1, -1),  # diagonal \
+        (1, -1), (-1, 1)   # diagonal /
     ]
 
     total = 0
     for row in range(ROWS):
         for col in range(COLS):
+            if lines[row][col] != 'X':
+                continue
+
             for vec in VECTORS:
                 r, c = row, col
-                for ch in 'XMAS':
+                for ch in 'MAS':
+                    r += vec[0]
+                    c += vec[1]
                     if (
                         r < 0 or r >= ROWS or
                         c < 0 or c >= COLS or
                         lines[r][c] != ch
                     ):
                         break
-                    r += vec[0]
-                    c += vec[1]
                 else:
                     total += 1
     return total
@@ -36,25 +39,18 @@ def part2(lines):
     ROWS = len(lines)
     COLS = len(lines[0])
 
-    def valid_coord(row, col):
-        return 0 <= row < ROWS and 0 <= col < COLS
-
     total = 0
-    for row in range(1, ROWS-1):
-        for col in range(1, COLS-1):
+    for r in range(1, ROWS-1):
+        for c in range(1, COLS-1):
             if (
+                lines[r][c] == 'A' and
                 (
-                    lines[row][col] == 'A' and
-                    valid_coord(row-1, col-1) and
-                    valid_coord(row-1, col+1) and
-                    valid_coord(row+1, col-1) and
-                    valid_coord(row+1, col+1)
-                ) and (
-                    lines[row-1][col-1] == 'M' and lines[row+1][col+1] == 'S' or
-                    lines[row-1][col-1] == 'S' and lines[row+1][col+1] == 'M'
-                ) and (
-                    lines[row-1][col+1] == 'M' and lines[row+1][col-1] == 'S' or
-                    lines[row-1][col+1] == 'S' and lines[row+1][col-1] == 'M'
+                    lines[r-1][c-1] == 'M' and lines[r+1][c+1] == 'S' or
+                    lines[r-1][c-1] == 'S' and lines[r+1][c+1] == 'M'
+                ) and
+                (
+                    lines[r-1][c+1] == 'M' and lines[r+1][c-1] == 'S' or
+                    lines[r-1][c+1] == 'S' and lines[r+1][c-1] == 'M'
                 )
             ):
                 total += 1
