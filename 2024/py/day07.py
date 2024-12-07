@@ -1,20 +1,9 @@
 #!/usr/bin/env python3
-import functools
 import itertools
-import math
-import os
-import re
-import sys
 import time
 import typing
-from collections import Counter, defaultdict, namedtuple
-from dataclasses import dataclass
-from enum import Enum, IntEnum
-from functools import lru_cache
 from io import StringIO
-from pprint import pprint
 
-import numpy as np
 
 def part1(data):
     answer = 0
@@ -68,11 +57,11 @@ def parse_input(data_src: typing.TextIO) -> list[typing.Any]:
 def main():
     (test1_data, test1_answer), (test2_data, test2_answer) = get_test_data()
     with open(__file__[:-3] + '-input.dat') as infile:
-        my_part1_answer = part1(*parse_input(test1_data)) 
+        my_part1_answer = part1(*parse_input(test1_data))
         assert my_part1_answer == test1_answer, f"got {my_part1_answer}; should be {test1_answer}"
         solve_part('1', part1, *parse_input(infile))  # 7710205485870
 
-        my_part2_answer = part2(*parse_input(test2_data)) 
+        my_part2_answer = part2(*parse_input(test2_data))
         assert my_part2_answer == test2_answer, f"got {my_part2_answer}; should be {test2_answer}"
         solve_part('2', part2, *parse_input(infile))  # 20928985450275
 
