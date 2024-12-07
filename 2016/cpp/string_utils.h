@@ -29,6 +29,10 @@ std::vector<std::string_view> split(const std::string& s,
     return results;
 }
 
+bool str_contains(const std::string& s, char ch) {
+    return s.find(ch) != s.npos;
+}
+
 }  // namespace utils
 
 #endif  // STRING_UTILS_H_
