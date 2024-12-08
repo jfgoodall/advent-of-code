@@ -1,49 +1,26 @@
 #!/usr/bin/env python3
-import itertools
 import time
 import typing
 from io import StringIO
 
 
-def part1(data):
-    answer = 0
-    for total, operands in data:
-        ops_possibilities = itertools.product('+*', repeat=len(operands)-1)
-        for ops_combo in ops_possibilities:
-            res = operands[0]
-            for operator, operand in zip(ops_combo, operands[1:]):
-                match operator:
-                    case '+':
-                        res += operand
-                    case '*':
-                        res *= operand
-                if res > total: break
-            if res == total:
-                answer += total
-                break
+def evaluate(operands, total, part2=False):
+    if operands[0] > total:
+        return False
+    if len(operands) == 1:
+        return total == operands[0]
+    return (
+        evaluate([operands[0]+operands[1]] + operands[2:], total, part2) or
+        evaluate([operands[0]*operands[1]] + operands[2:], total, part2) or
+        part2 and
+            evaluate([int(str(operands[0])+str(operands[1]))] + operands[2:], total, part2)
+    )
 
-    return answer
+def part1(data):
+    return sum(total for operands, total in data if evaluate(operands, total))
 
 def part2(data):
-    answer = 0
-    for total, operands in data:
-        ops_possibilities = itertools.product('+*|', repeat=len(operands)-1)
-        for ops_combo in ops_possibilities:
-            res = operands[0]
-            for operator, operand in zip(ops_combo, operands[1:]):
-                match operator:
-                    case '+':
-                        res += operand
-                    case '*':
-                        res *= operand
-                    case '|':
-                        res = int(str(res) + str(operand))
-                if res > total: break
-            if res == total:
-                answer += total
-                break
-
-    return answer
+    return sum(total for operands, total in data if evaluate(operands, total, part2=True))
 
 def parse_input(data_src: typing.TextIO) -> list[typing.Any]:
     data_src.seek(0)
@@ -51,7 +28,7 @@ def parse_input(data_src: typing.TextIO) -> list[typing.Any]:
     for line in data_src.read().splitlines():
         total, operands = line.split(':')
         operands = operands.split()
-        data.append((int(total), tuple(map(int, operands))))
+        data.append((list(map(int, operands)), int(total)))
     return [data]
 
 def main():
