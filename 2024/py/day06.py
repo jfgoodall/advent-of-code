@@ -29,7 +29,7 @@ def walk_patrol(grid, pos, vec, obstacle=None):
     ROWS = len(grid)
     COLS = len(grid[0])
 
-    visited = {((pos, vec),)}
+    visited = {(pos, vec)}
     while True:
         next = pos[0]+vec[0], pos[1]+vec[1]
         if 0 <= next[0] < ROWS and 0 <= next[1] < COLS:
