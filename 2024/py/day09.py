@@ -3,12 +3,6 @@ import time
 import typing
 from io import StringIO
 
-try:
-    pass
-except ImportError:
-    def tqdm(iterable=None, **kwargs):
-        return iterable
-
 
 def part1(disk_map):
     checksum = 0
@@ -27,7 +21,7 @@ def part1(disk_map):
             if disk_map[fwd_idx] == 0:
                 fwd_idx += 1
         else:
-            # check for 0 empty blocks
+            # check for 0-size free-space blocks
             if disk_map[fwd_idx] == 0:
                 fwd_idx += 1
                 fwd_id += 1
@@ -63,22 +57,24 @@ def part2(disk_map):
         pos += disk_map[idx+1]
         file_id += 1
 
+    checksum = 0
     for fb in reversed(file_blocks):
-        for sp in space_blocks:
+        for sp_idx, sp in enumerate(space_blocks):
             # don't move files to the right
             if fb[0] < sp[0]:
+                checksum += fb[2] * sum(range(fb[0], fb[0]+fb[1]))
                 break
 
-            # move a file if it fits
+            # move the file if it fits
             if fb[1] <= sp[1]:
-                fb[0] = sp[0]
+                checksum += fb[2] * sum(range(sp[0], sp[0]+fb[1]))
                 sp[0] += fb[1]
                 sp[1] -= fb[1]
+                if sp[1] == 0:
+                    # don't continue to check empty space block
+                    # (deletion might be faster with a linked list)
+                    del space_blocks[sp_idx]
                 break
-
-    checksum = 0
-    for fb in file_blocks:
-        checksum += fb[2] * sum(range(fb[0], fb[0]+fb[1]))
 
     return checksum
 
