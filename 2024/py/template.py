@@ -10,7 +10,7 @@ import typing
 from collections import Counter, defaultdict, namedtuple
 from dataclasses import dataclass
 from enum import Enum, IntEnum
-from functools import lru_cache
+from functools import cache
 from io import StringIO
 from pprint import pprint
 

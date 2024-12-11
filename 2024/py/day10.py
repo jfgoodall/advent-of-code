@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import time
 import typing
-from functools import lru_cache
+from functools import cache
 from io import StringIO
 
 # make grid global so it doesn't have to be hashed every time
@@ -9,7 +9,7 @@ from io import StringIO
 # grid as parameter
 GRID = tuple()
 
-@lru_cache
+@cache
 def get_reachable_peaks(row, col, step_height):
     if (
         row < 0 or row >= len(GRID) or

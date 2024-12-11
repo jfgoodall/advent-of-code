@@ -2,11 +2,11 @@
 import math
 import time
 import typing
-from functools import lru_cache
+from functools import cache
 from io import StringIO
 
 
-@lru_cache(maxsize=None)
+@cache
 def blink(number, cycles):
     if cycles == 0:
         return 1
