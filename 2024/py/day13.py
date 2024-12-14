@@ -6,20 +6,29 @@ from io import StringIO
 
 
 def calc_tokens(dxa, dya, dxb, dyb, px, py, limit=float('inf'), prize_bias=0):
+    """
+        1) A*dxa + B*dxb = px
+           A = (px - B*dxb) / dxa
+
+        2) A*dya + B*dyb = py
+           (px - B*dxb) * dya / dxa + B*dyb = py
+           px*dya - B*dxb*dya + B*dyb*dxa = py*dxa
+           B*dyb*dxa - B*dxb*dya = py*dxa - dya*px
+           B * (dyb*dxa - dxb*dya) = py*dxa - dya*px
+           B = (py*dxa - dya*px) / (dyb*dxa - dxb*dya)
+    """
     px += prize_bias
     py += prize_bias
 
-    # naive method for part 1; figure out p2 later
-    for a in range(min(limit+1, max(px//dxa, py//dya))):
-        ax_amt = a * dxa
-        ay_amt = a * dya
-        for b in range(min(limit+1, max(px//dxb, py//dyb))):
-            bx_amt = b * dxb
-            by_amt = b * dyb
-            if ax_amt + bx_amt > px or ay_amt + by_amt > py:
-                break
-            if ax_amt + bx_amt == px and ay_amt + by_amt == py:
-                return 3*a + b  # return first found?
+    b = (py*dxa - px*dya) // (dyb*dxa - dxb*dya)
+    a = (px - b*dxb) // dxa
+
+    if (
+        a*dxa + b*dxb == px and
+        a*dya + b*dyb == py and
+        a <= limit and b <= limit
+    ):
+        return 3*a + b
     return 0
 
 def part1(machines):
@@ -41,8 +50,8 @@ def parse_input(data_src: typing.TextIO) -> list[typing.Any]:
     # "one" liner
     return [tuple(
         tuple(
-            tuple(map(int, regex.match(string).groups()))
-            for regex, string
+            map(int, regex.match(line).groups())
+            for regex, line
             in zip(REGEXES, machine.splitlines())
         )
         for machine in data_src.read().split('\n\n')
@@ -53,10 +62,10 @@ def main():
     with open(__file__[:-3] + '-input.dat') as infile:
         my_part1_answer = part1(*parse_input(test1_data))
         assert my_part1_answer == test1_answer, f"got {my_part1_answer}; should be {test1_answer}"
-        solve_part('1', part1, *parse_input(infile))  # -
+        solve_part('1', part1, *parse_input(infile))  # 33921
 
         # no test answer provided for part 2
-        solve_part('2', part2, *parse_input(infile))  # -
+        solve_part('2', part2, *parse_input(infile))  # 82261957837868
 
 def solve_part(part_label: str, part_fn: typing.Callable, *args):
     start = time.perf_counter()
