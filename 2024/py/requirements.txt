@@ -3,4 +3,5 @@ pycln
 isort
 numpy
 requests
+scipy
 tqdm
