@@ -6,34 +6,30 @@ from io import StringIO
 
 
 class Node:
-    __slots__ = 'pos', 'dist', 'prev', 'removed'
+    __slots__ = 'pos', 'dist', 'prev', 'obselete'
 
     def __init__(self, pos, dist, prev):
         # pos: tuple[row, col, d_row, d_col]
         self.pos = pos
         self.dist = dist
         self.prev: list[Node] = prev
-        self.removed = False
+        self.obselete = False
 
     def __lt__(self, other):
         return self.dist < other.dist
 
-def dijkstra(grid, start, end):
-    # this version finds all equally best paths
-    # NB: this version fails if multiple best paths arrive at the goal from
-    #     different penultimate locations due to short-circuiting when the goal
-    #     is found once
-    #     e.g. ##### -> returns 5 for part 2 (should be 8)
-    #          #...#
-    #          #S#E#
-    #          #...#
-    #          #####
+def dijkstra(grid, start, end) -> Node:
+    # this version finds all equally best paths; returns goal node
     heap = []
     visited = {}
+    goal_node = None
 
     def add_node(pos, dist, prev: list[Node]):
+        if grid[pos[0]][pos[1]] == '#':
+            return
+
         if old_node := visited.get(pos):
-            old_node.removed = True
+            old_node.obselete = True
 
         node = Node(pos, dist, prev)
         heapq.heappush(heap, node)
@@ -42,28 +38,34 @@ def dijkstra(grid, start, end):
     add_node((start[0], start[1], 0, 1), 0, [])
     while heap:
         current = heapq.heappop(heap)
-        if current.removed:
+        row, col, drow, dcol = current.pos
+
+        if (
+            current.obselete or
+            goal_node and current.dist > goal_node.dist
+        ):
             continue
 
-        row, col, drow, dcol = current.pos
         if (row, col) == end:
-            break
+            if not goal_node:
+                goal_node = current
+            elif current.dist == goal_node.dist:
+                goal_node.prev.extend(current.prev)
+            continue
 
-        for next_pos, dist in (
-            ((row+drow, col+dcol, drow, dcol), 1),
-            ((row, col, dcol, -drow), 1000),
-            ((row, col, -dcol, drow), 1000)
+        for next_pos, next_dist in (
+            ((row+drow, col+dcol, drow, dcol), current.dist+1),
+            ((row, col, dcol, -drow), current.dist+1000),
+            ((row, col, -dcol, drow), current.dist+1000)
         ):
-            if seen := visited.get(next_pos):
-                if current.dist + dist < seen.dist:
-                    add_node(next_pos, current.dist+dist, [current])
-                elif current.dist + dist == seen.dist:
-                    add_node(next_pos, current.dist+dist, seen.prev+[current])
-            elif grid[next_pos[0]][next_pos[1]] != '#':
-                add_node(next_pos, current.dist+dist, [current])
+            seen = visited.get(next_pos)
+            if not seen or next_dist <= seen.dist:
+                next_prev = [current]
+                if seen and next_dist == seen.dist:
+                    next_prev.extend(seen.prev)
+                add_node(next_pos, next_dist, next_prev)
 
-    assert grid[row][col] == 'E'
-    return current
+    return goal_node
 
 def part1(grid, start, end):
     goal = dijkstra(grid, start, end)
@@ -71,10 +73,10 @@ def part1(grid, start, end):
 
 def part2(grid, start, end):
     path_coords = set()
-    stack = [dijkstra(grid, start, end)]
-    while stack:
-        node = stack.pop()
-        stack.extend(node.prev)
+    backtrack = [dijkstra(grid, start, end)]
+    while backtrack:
+        node = backtrack.pop()
+        backtrack.extend(node.prev)
         path_coords.add((node.pos[0], node.pos[1]))
     return len(path_coords)
 
@@ -82,7 +84,7 @@ def parse_input(data_src: typing.TextIO) -> list[typing.Any]:
     data_src.seek(0)
     grid = []
     for r, row in enumerate(data_src.read().splitlines()):
-        grid.append(list(row))
+        grid.append(row)
         if (c := row.find('S')) > 0:
             start = r, c
         if (c := row.find('E')) > 0:
@@ -94,11 +96,13 @@ def main():
     (test1_data, test1_answer), (test2_data, test2_answer) = get_test_data()
     with open(__file__[:-3] + '-input.dat') as infile:
         my_part1_answer = part1(*parse_input(test1_data))
-        assert my_part1_answer == test1_answer, f"got {my_part1_answer}; should be {test1_answer}"
+        assert my_part1_answer == test1_answer, \
+            f"got {my_part1_answer}; should be {test1_answer}"
         solve_part('1', part1, *parse_input(infile))  # 72428
 
         my_part2_answer = part2(*parse_input(test2_data))
-        assert my_part2_answer == test2_answer, f"got {my_part2_answer}; should be {test2_answer}"
+        assert my_part2_answer == test2_answer, \
+            f"got {my_part2_answer}; should be {test2_answer}"
         solve_part('2', part2, *parse_input(infile))  # 456
 
 def solve_part(part_label: str, part_fn: typing.Callable, *args):

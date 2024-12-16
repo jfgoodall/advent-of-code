@@ -40,11 +40,13 @@ def main():
     (test1_data, test1_answer), (test2_data, test2_answer) = get_test_data()
     with open(__file__[:-3] + '-input.dat') as infile:
         my_part1_answer = part1(*parse_input(test1_data))
-        assert my_part1_answer == test1_answer, f"got {my_part1_answer}; should be {test1_answer}"
+        assert my_part1_answer == test1_answer, \
+            f"got {my_part1_answer}; should be {test1_answer}"
         solve_part('1', part1, *parse_input(infile))  # -
 
         my_part2_answer = part2(*parse_input(test2_data))
-        assert my_part2_answer == test2_answer, f"got {my_part2_answer}; should be {test2_answer}"
+        assert my_part2_answer == test2_answer, \
+            f"got {my_part2_answer}; should be {test2_answer}"
         solve_part('2', part2, *parse_input(infile))  # -
 
 def solve_part(part_label: str, part_fn: typing.Callable, *args):
