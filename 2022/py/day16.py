@@ -1,20 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import functools
 import itertools
-import os
 import re
-import sys
 import time
-from collections import Counter, defaultdict, namedtuple
-from dataclasses import dataclass
+from collections import defaultdict, namedtuple
 from io import StringIO
 
-import numpy as np
-
 try:
-    from tqdm import tqdm
+    pass
 except ImportError:
     def tqdm(iterable=None, **kwargs):
         return iterable
