@@ -62,11 +62,16 @@ def part1(bytes):
     return goal.dist
 
 def part2(bytes):
-    # check backwards - the path finder will go faster when there are
-    # no valid paths
-    for x in range(len(bytes)-1, 1023, -1):
-        if dijkstra(set(bytes[:x]), 70):
-            return f"{bytes[x][0]},{bytes[x][1]}"
+    # invert check and find when path becomes unblocked; the path finder
+    # completes faster when there are no valid paths
+    obstacles = set(bytes)
+    first_blocked = bytes[-1]
+    for obstacle in reversed(bytes[:-1]):
+        if dijkstra(obstacles, 70):
+            return f"{first_blocked[0]},{first_blocked[1]}"
+
+        obstacles.remove(obstacle)
+        first_blocked = obstacle
 
 def parse_input(data_src: typing.TextIO) -> list[typing.Any]:
     data_src.seek(0)
