@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
+import itertools
 import time
 import typing
 from collections import defaultdict
 from io import StringIO
-from pprint import pprint
 
 
 def combo_operand_value(operand, a, b, c):
@@ -47,47 +47,43 @@ def part2(a, b, c, program):
     """
     Program: 2,4,1,2,7,5,0,3,1,7,4,1,5,5,3,0
 
-    2,4: b = a & 111b
-    1,2: b = b ^ 010b
-    7,5: c = a >> b
-    0,3: a = a >> 3
-    1,7: b = b ^ 111b
-    4,1: b = b ^ c
-    5,5: output b & 111b
+    2,4: b = a & 111b     ; b in [0..7]
+    1,2: b = b ^ 010b     ; b in [0..7]
+    7,5: c = a >> b       ; c uses 0..7 lowest bits from a
+    0,3: a = a >> 3       ; swallow lowest 3 bits from a
+    1,7: b = b ^ 111b     ; b in [0..7]
+    4,1: b = b ^ c        ; b influenced by 0..7 lowest bits from a
+    5,5: output b & 111b  ; only consider lowest 3 bits of b
     3,0: if a > 0 jmp to beginning
 
-    b = a3 ^ 010
-    c = (a >> (a3 ^ 010)) ^ 010
-    b = a3 ^ 010 ^ 111
-      = a3 ^ 101
-    b = a3 ^ 101 ^ (a >> (a3 ^ 010)) ^ 010
-      = a3 ^ (a >> (a3 ^ 010)) ^ 111
-
-    output b3
-    a >>= 3
-    loop if a
-
-    the lowest 6 bits are hashed to create a 3-bit output; the lowest
+    the lowest 10 bits are hashed to create a 3-bit output; the lowest
     3 bits are dropped and the process repeated
     """
 
-    # create a mapp
+    # create a mapping of all 3-bit outputs from all 10-bit input strings
+    hash_bits = 10
     unhash = defaultdict(list)
-    for a in range(0b111111):
+    for a in range(2**hash_bits):
         output = run_program(a, 0, 0, program)
-        unhash[output[0]].append(a)
+        unhash[output[0]].append(f'{a:0{hash_bits}b}')
 
-    a = 0
-    for out in reversed(program):
-        a <<= 3
-        a |= unhash[out][0]
+    # work from last output and construct a from most significant bits to least
+    valid_a = [
+        va for va in unhash[program[-1]]
+        if va[:hash_bits-3] == '0'*(hash_bits-3)  # last output only uses 3 hash bits
+    ]
 
-    print('---')
-    pprint(dict(unhash))
-    print(program)
-    print(run_program(a, 0, 0, program))
+    # find the hash strings for each output value such that adjacent strings overlap
+    # by 7 bits
+    for out_idx in reversed(range(len(program)-1)):
+        valid_next_a = []
+        for curr_a, next_part in itertools.product(valid_a, unhash[program[out_idx]]):
+            if curr_a[-(hash_bits-3):] == next_part[:(hash_bits-3)]:
+                valid_next_a.append(curr_a + next_part[-3:])
+        valid_a = valid_next_a
 
-    return a
+    # every a value in valid_a will produce the correct output; return the minimum
+    return min(int(va, 2) for va in valid_a)
 
 def parse_input(data_src: typing.TextIO) -> list[typing.Any]:
     data_src.seek(0)
