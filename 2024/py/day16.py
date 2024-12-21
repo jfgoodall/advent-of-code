@@ -47,10 +47,7 @@ def dijkstra(grid, start, end) -> Node:
             continue
 
         if (row, col) == end:
-            if not goal_node:
-                goal_node = current
-            elif current.dist == goal_node.dist:
-                goal_node.prev.extend(current.prev)
+            goal_node = current
             continue
 
         for next_pos, next_dist in (
