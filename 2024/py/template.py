@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import functools
+import heapq
 import itertools
 import math
 import os
