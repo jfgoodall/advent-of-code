@@ -43,18 +43,19 @@ def main():
         my_part1_answer = part1(*parse_input(test1_data))
         assert my_part1_answer == test1_answer, \
             f"got {my_part1_answer}; should be {test1_answer}"
-        solve_part('1', part1, *parse_input(infile))  # -
+        solve_part('1', part1, *parse_input(infile), expected=None)
 
         my_part2_answer = part2(*parse_input(test2_data))
         assert my_part2_answer == test2_answer, \
             f"got {my_part2_answer}; should be {test2_answer}"
-        solve_part('2', part2, *parse_input(infile))  # -
+        solve_part('2', part2, *parse_input(infile), expected=None)
 
-def solve_part(part_label: str, part_fn: typing.Callable, *args):
+def solve_part(part_label: str, part_fn: typing.Callable, *args, expected=None):
     start = time.perf_counter()
     result = part_fn(*args)
     end = time.perf_counter()
-    print(f"Part {part_label}: {result}  ({int((end-start)*1000)} ms)")
+    regress = '' if expected is None or result == expected else "** Regression **"
+    print(f"Part {part_label}: {result}  ({int((end-start)*1000)} ms)  {regress}")
 
 def get_test_data() -> tuple[tuple[str, str|float], tuple[str, str|float]]:
     """Keep test data out of the way at the bottom of this file."""
