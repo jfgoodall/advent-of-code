@@ -7,27 +7,26 @@ from io import StringIO
 
 
 def find_groups(links):
-    networks = defaultdict(set)
+    edges = defaultdict(set)
     for a, b in links:
-        networks[a].add(a)
-        networks[a].add(b)
-        networks[b].add(a)
-        networks[b].add(b)
+        edges[a].add(b)
+        edges[b].add(a)
 
     all_groups = set()
-    for linked_pair in links:
-        group = set(linked_pair)
-        neighbors = list(linked_pair)
-        seen =  set()
-        while neighbors:
-            cpu = neighbors.pop()
+    for connected in links:
+        # start with pre-defined group and expand it
+        group = set(connected)
+        seen =  set(connected)
+        adjacent = list(edges[connected[0]] & edges[connected[1]])
+        while adjacent:
+            cpu = adjacent.pop()
             if cpu in seen:
                 continue
             seen.add(cpu)
 
-            if all(cpu in networks[g] and g in networks[cpu] for g in group):
+            if all(cpu in edges[g] and g in edges[cpu] for g in group):
                 group.add(cpu)
-                neighbors.extend(list(networks[cpu]))
+                adjacent.extend(list(edges[cpu]))
 
         all_groups.add(tuple(sorted(group)))
 
@@ -37,18 +36,15 @@ def part1(links):
     groups = find_groups(links)
 
     triples = set()
-    for group in groups:
-        if len(group) == 3:
-            triples.add(group)
-        elif len(group) > 3:
-            # break down larger groups into groups of 3
-            for g in itertools.combinations(group, 3):
-                triples.add(tuple(g))
+    for group in filter(lambda g: len(g) >= 3, groups):
+        # break down larger groups into groups of 3
+        for g in itertools.combinations(group, 3):
+            triples.add(tuple(g))
 
-    count = 0
-    for group in triples:
-        count += int(any(cpu[0] == 't' for cpu in group))
-    return count
+    return sum(
+        any(cpu[0] == 't' for cpu in group)
+        for group in triples
+    )
 
 def part2(links):
     groups = find_groups(links)
