@@ -1,0 +1,7 @@
+[tool.pycln]
+exclude = "template.py"
+all = true
+
+[tool.isort]
+line_length = 100
+skip_gitignore = true

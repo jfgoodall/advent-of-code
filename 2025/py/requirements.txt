@@ -1,0 +1,7 @@
+pre-commit
+pycln
+isort
+numpy
+requests
+scipy
+tqdm
