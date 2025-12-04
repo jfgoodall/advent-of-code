@@ -14,8 +14,17 @@ def part1(banks):
         total += bank[idx1] * 10 + bank[idx2]
     return total
 
-def part2(parsed):
-    pass
+def part2(banks):
+    total = 0
+    for bank in banks:
+        joltage = 0
+        for digit in range(11, -1, -1):
+            check_digits = bank[:-digit] if digit else bank
+            idx = np.argmax(check_digits)
+            joltage = joltage * 10 + bank[idx]
+            bank = bank[idx+1:]
+        total += joltage
+    return total
 
 def parse_input(data_src: typing.TextIO) -> list[typing.Any]:
     data_src.seek(0)
@@ -30,12 +39,12 @@ def main():
         my_part1_answer = part1(*parse_input(test1_data))
         assert my_part1_answer == test1_answer, \
             f"got {my_part1_answer}; should be {test1_answer}"
-        solve_part('1', part1, *parse_input(infile), expected=None)
+        solve_part('1', part1, *parse_input(infile), expected=17359)
 
         my_part2_answer = part2(*parse_input(test2_data))
         assert my_part2_answer == test2_answer, \
             f"got {my_part2_answer}; should be {test2_answer}"
-        solve_part('2', part2, *parse_input(infile), expected=None)
+        solve_part('2', part2, *parse_input(infile), expected=172787336861064)
 
 def solve_part(part_label: str, part_fn: typing.Callable, *args, expected=None):
     start = time.perf_counter()

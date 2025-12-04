@@ -46,12 +46,12 @@ def main():
         my_part1_answer = part1(*parse_input(test1_data))
         assert my_part1_answer == test1_answer, \
             f"got {my_part1_answer}; should be {test1_answer}"
-        solve_part('1', part1, *parse_input(infile), expected=None)
+        solve_part('1', part1, *parse_input(infile), expected=38158151648)
 
         my_part2_answer = part2(*parse_input(test2_data))
         assert my_part2_answer == test2_answer, \
             f"got {my_part2_answer}; should be {test2_answer}"
-        solve_part('2', part2, *parse_input(infile), expected=None)
+        solve_part('2', part2, *parse_input(infile), expected=45283684555)
 
 def solve_part(part_label: str, part_fn: typing.Callable, *args, expected=None):
     start = time.perf_counter()
