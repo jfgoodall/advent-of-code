@@ -14,27 +14,18 @@ def part1(coords):
     return max(areas)
 
 def part2(coords):
-    # pts = [(7,1),(11,1),(11,7),(9,7),(9,5),(2,5),(2,3),(7,3)]
-
-    hull = shapely.MultiPoint(coords).convex_hull
-    rects = itertools.combinations(coords, 2)
+    poly = shapely.Polygon(coords)
     max_area = 0
-    for a, b in rects:
-        # print(f'{a=}, {b=}, {(a[0],b[1])=}, {(b[0],a[1])=}')
-        # if hull.intersects(shapely.Point((a[0], b[1]))) and hull.intersects(shapely.Point((b[0], a[1]))):
-        rect = shapely.Polygon([a, (a[0], b[1]), b, (b[0], a[1])])
-        if hull.covers(rect):
+    for a, b in itertools.combinations(coords, 2):
+        if poly.covers(shapely.Polygon([a, (a[0], b[1]), b, (b[0], a[1])])):
             area = (abs(a[0]-b[0])+1) * (abs(a[1]-b[1])+1)
             if area > max_area:
                 max_area = area
-            # print(f"!!! {a=}, {b=}, {area=}")
-
-    # 4635268638 is too high
     return max_area
 
 def parse_input(data_src: typing.TextIO) -> list[typing.Any]:
     data_src.seek(0)
-    return [set(tuple(map(int, line.split(','))) for line in data_src.read().splitlines())]
+    return [list(tuple(map(int, line.split(','))) for line in data_src.read().splitlines())]
 
 def main():
     (test1_data, test1_answer), (test2_data, test2_answer) = get_test_data()
@@ -47,7 +38,7 @@ def main():
         my_part2_answer = part2(*parse_input(test2_data))
         assert my_part2_answer == test2_answer, \
             f"got {my_part2_answer}; should be {test2_answer}"
-        solve_part('2', part2, *parse_input(infile), expected=None)
+        solve_part('2', part2, *parse_input(infile), expected=1461987144)
 
 def solve_part(part_label: str, part_fn: typing.Callable, *args, expected=None):
     start = time.perf_counter()
